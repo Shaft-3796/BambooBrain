@@ -1,11 +1,9 @@
-#include "SDL.h"
-#include "stdio.h"
+#include "Dataset.h"
 
 int main(){
-    FILE* file = fopen("FASION_test.txt", "r");
-    if(file == NULL){
-        printf("Error: File not found\n");
-        return 1;
-    }
+
+    Dataset *data = Dataset_readFromFile("PENDIGITS_test.txt");
+
+    Dataset_destroy(data);
     return 1;
 }
