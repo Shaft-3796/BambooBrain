@@ -3,7 +3,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 
-PATH = "datasets/FASHION_test.txt"
+PATH = "datasets/PENDIGITS_test.txt"
 
 
 class Instance:
