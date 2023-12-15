@@ -49,7 +49,7 @@ void Dataset_destroy(Dataset *data) {
         free(data->instances[i].values);
     }
 
-    free(data->instances);
+    // free(data->instances); !TODO
     free(data);
 }
 
@@ -59,7 +59,6 @@ Subproblem *Dataset_getSubproblem(Dataset *data) {
     subproblem->instanceCount = data->instanceCount;
     subproblem->capacity = data->instanceCount;
     subproblem->featureCount = data->featureCount;
-    subproblem->instances = data->instances;
     subproblem->classCount = data->classCount;
 
     subproblem->instances = (Instance **) calloc(subproblem->instanceCount, sizeof(Instance*));
@@ -93,8 +92,16 @@ Subproblem *Subproblem_create(int maximumCapacity, int featureCount, int classCo
     subproblem->capacity = maximumCapacity;
     subproblem->classCount = classCount;
 
-    subproblem->instances = (Instance **) calloc(maximumCapacity, sizeof(Instance*));
+    subproblem->instances = (Instance **)calloc(subproblem->capacity, sizeof(Instance*));
+
+    subproblem->classes = (SubproblemClass *)calloc(classCount, sizeof(SubproblemClass));
+    for (int i = 0; i < classCount; ++i) {
+        subproblem->classes[i].instances = (Instance **)calloc(0, sizeof(Instance*));
+    }
+
+    return subproblem;
 }
+
 
 void Subproblem_destroy(Subproblem *subproblem) {
     if (subproblem == NULL) return;
@@ -110,18 +117,17 @@ void Subproblem_destroy(Subproblem *subproblem) {
 }
 
 void Subproblem_insert(Subproblem *subproblem, Instance *instance) {
-    int i=0;
-    while (subproblem->instances[i] && i<subproblem->instanceCount) i++;
-    subproblem->instances[i] = instance;
-    subproblem->instanceCount ++;
+    subproblem->instances = realloc(subproblem->instances, (subproblem->instanceCount + 1) * sizeof(Instance*));
+    subproblem->instances[subproblem->instanceCount] = instance;
+    subproblem->instanceCount++;
 
-    i=0;
-    SubproblemClass *classes = subproblem->classes;
-    while (classes->instances[i] && i<classes->instanceCount) i++;
-    classes->instances[i] = instance;
-    classes->instanceCount ++;
-
+    int classID = instance->classID;
+    SubproblemClass *class = &subproblem->classes[classID];
+    class->instances = realloc(class->instances, (class->instanceCount + 1) * sizeof(Instance*));
+    class->instances[class->instanceCount] = instance;
+    class->instanceCount++;
 }
+
 
 void Subproblem_print(Subproblem *subproblem) {
     printf("Dataset with %d classes of %d features\n", subproblem->classCount, subproblem->featureCount);
