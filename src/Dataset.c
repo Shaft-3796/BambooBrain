@@ -2,7 +2,7 @@
 
 
 /* --- Dataset parsing --- */
-FILE* open_dataset_file(char* filename) {
+static FILE* open_dataset_file(char* filename) {
 char path[100] = DATASETS_PATH;
     strcat(path, filename);
 
@@ -15,11 +15,11 @@ char path[100] = DATASETS_PATH;
     return file;
 }
 
-void parse_dataset_properties(FILE* file, Dataset* data) {
+static void parse_dataset_properties(FILE* file, Dataset* data) {
     fscanf(file, "%d %d %d", &data->instanceCount, &data->classCount, &data->featureCount);
 }
 
-void parse_instance(FILE* file, Instance* instance, const int featureCount) {
+static void parse_instance(FILE* file, Instance* instance, const int featureCount) {
     // Features init
     instance->values = (int*)calloc(featureCount, sizeof(int));
     // Class id
@@ -30,7 +30,7 @@ void parse_instance(FILE* file, Instance* instance, const int featureCount) {
     }
 }
 
-void parse_instances(FILE* file, Dataset* data) {
+static void parse_instances(FILE* file, Dataset* data) {
     data->instances = (Instance*)calloc(data->instanceCount, sizeof(Instance));
 
     for (int i = 0; i < data->instanceCount; ++i) {
@@ -78,21 +78,21 @@ void Dataset_destroy(Dataset *data) {
 }
 
 /* --- Subproblem --- */
-void subproblem_copy_dataset_properties(Subproblem *subproblem, Dataset *data) {
+static void subproblem_copy_dataset_properties(Subproblem *subproblem, Dataset *data) {
     subproblem->instanceCount = data->instanceCount;
     subproblem->capacity = data->instanceCount;
     subproblem->featureCount = data->featureCount;
     subproblem->classCount = data->classCount;
 }
 
-void subproblem_copy_dataset_instances(Subproblem *subproblem, Dataset *data) {
+static void subproblem_copy_dataset_instances(Subproblem *subproblem, Dataset *data) {
     subproblem->instances = (Instance **) calloc(subproblem->instanceCount, sizeof(Instance*));
     for (int i = 0; i < subproblem->instanceCount; ++i) {
         subproblem->instances[i] = &data->instances[i];
     }
 }
 
-void subproblem_generate_classes(Subproblem *subproblem) {
+static void subproblem_generate_classes(Subproblem *subproblem) {
     // Create the classes
     subproblem->classes = (SubproblemClass *) calloc(subproblem->classCount, sizeof(SubproblemClass));
 
@@ -160,7 +160,7 @@ Subproblem *Subproblem_create(int maximumCapacity, int featureCount, int classCo
     return subproblem;
 }
 
-void subproblem_class_destroy(SubproblemClass *subproblemClass) {
+static void subproblem_class_destroy(SubproblemClass *subproblemClass) {
     if (subproblemClass == NULL) return;
 
     free(subproblemClass->instances);
