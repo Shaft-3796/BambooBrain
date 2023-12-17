@@ -73,7 +73,7 @@ void Dataset_destroy(Dataset *data) {
         free(data->instances[i].values);
     }
 
-    free(data->instances);
+    // free(data->instances); !TODO
     free(data);
 }
 
@@ -150,7 +150,12 @@ Subproblem *Subproblem_create(int maximumCapacity, int featureCount, int classCo
     subproblem->capacity = maximumCapacity;
     subproblem->classCount = classCount;
 
-    subproblem->instances = (Instance **) calloc(maximumCapacity, sizeof(Instance*));
+    subproblem->instances = (Instance **) calloc(subproblem->capacity, sizeof(Instance*));
+
+    subproblem->classes = (SubproblemClass *)calloc(classCount, sizeof(SubproblemClass));
+    for (int i = 0; i < classCount; ++i) {
+        subproblem->classes[i].instances = (Instance **)calloc(0, sizeof(Instance*));
+    }
 
     return subproblem;
 }
@@ -184,16 +189,15 @@ void Subproblem_destroy(Subproblem *subproblem) {
  * @param instance the instance to insert
  */
 void Subproblem_insert(Subproblem *subproblem, Instance *instance) {
-    int i=0;
-    while (subproblem->instances[i] && i<subproblem->instanceCount) i++;
-    subproblem->instances[i] = instance;
-    subproblem->instanceCount ++;
+    subproblem->instances = realloc(subproblem->instances, (subproblem->instanceCount + 1) * sizeof(Instance*));
+    subproblem->instances[subproblem->instanceCount] = instance;
+    subproblem->instanceCount++;
 
-    i=0;
-    SubproblemClass *classes = subproblem->classes;
-    while (classes->instances[i] && i<classes->instanceCount) i++;
-    classes->instances[i] = instance;
-    classes->instanceCount ++;
+    int classID = instance->classID;
+    SubproblemClass *class = &subproblem->classes[classID];
+    class->instances = realloc(class->instances, (class->instanceCount + 1) * sizeof(Instance*));
+    class->instances[class->instanceCount] = instance;
+    class->instanceCount++;
 }
 
 /**
