@@ -47,8 +47,12 @@ float Split_gini(Subproblem *sp, int featureID, float threshold) {
     * So 0 <= gini <= 1
     */
 
-    return (float)spl->instanceCount/(float)sp->instanceCount * split_compute_impurity(spl) +
+    const float r = (float)spl->instanceCount/(float)sp->instanceCount * split_compute_impurity(spl) +
            (float)spr->instanceCount/(float)sp->instanceCount * split_compute_impurity(spr);
+
+    Subproblem_destroy(spl);
+    Subproblem_destroy(spr);
+    return r;
 }
 
 /**

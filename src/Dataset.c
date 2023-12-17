@@ -3,8 +3,8 @@
 
 /* --- Dataset parsing --- */
 static FILE* open_dataset_file(char* filename) {
-char path[100] = DATASETS_PATH;
-    strcat(path, filename);
+    char path[1024];
+    snprintf(path, sizeof(path), "%s%s", DATASETS_PATH, filename);
 
     FILE *file = fopen(path, "r");
     if (!file) {
@@ -73,7 +73,7 @@ void Dataset_destroy(Dataset *data) {
         free(data->instances[i].values);
     }
 
-    // free(data->instances); !TODO
+    free(data->instances);
     free(data);
 }
 
