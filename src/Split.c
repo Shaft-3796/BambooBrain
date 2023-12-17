@@ -1,6 +1,14 @@
 #include "Split.h"
 
-static void split_subproblem(Subproblem *sp, int featureID, float threshold, Subproblem *spl, Subproblem *spr) {
+/**
+ * @brief Split_subproblem splits a subproblem into 2 subproblems based on a feature and a threshold
+ * @param sp the subproblem to split
+ * @param featureID the feature to split on
+ * @param threshold the threshold to split on
+ * @param spl the left subproblem
+ * @param spr the right subproblem
+ */
+void Split_subproblem(Subproblem *sp, int featureID, float threshold, Subproblem *spl, Subproblem *spr) {
     for (int i = 0; i < sp->instanceCount; ++i) {
         (float)sp->instances[i]->values[featureID] <= threshold ?
             Subproblem_insert(spl, sp->instances[i]) :
@@ -32,7 +40,7 @@ float Split_gini(Subproblem *sp, int featureID, float threshold) {
     Subproblem *spl = Subproblem_create(sp->instanceCount, sp->featureCount, sp->classCount);
     Subproblem *spr = Subproblem_create(sp->instanceCount, sp->featureCount, sp->classCount);
 
-    split_subproblem(sp, featureID, threshold, spl, spr);
+    Split_subproblem(sp, featureID, threshold, spl, spr);
 
     /* |spl| + |spr| = |sp| => (|spl|+|spr|)/|sp| = 1 => (|spl|/|sp|) + (|spr|/|sp|) = 1
     * With 0 <= g(spl) <= 1 and 0 <= g(spr) <= 1, we have 0 <= (|spl|/|sp|)*g(spl) + (|spr|/|sp|)*g(spr) <= 1

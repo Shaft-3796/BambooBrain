@@ -9,6 +9,16 @@ typedef struct sSplit{
 } Split;
 
 /**
+ * @brief Split_subproblem splits a subproblem into 2 subproblems based on a feature and a threshold
+ * @param sp the subproblem to split
+ * @param featureID the feature to split on
+ * @param threshold the threshold to split on
+ * @param spl the left subproblem
+ * @param spr the right subproblem
+ */
+void Split_subproblem(Subproblem *sp, int featureID, float threshold, Subproblem *spl, Subproblem *spr);
+
+/**
  * @brief Split_gini computes the gini impurity of a subproblem given a feature and a threshold
  * @param sp the subproblem
  * @param featureID the feature to split on
