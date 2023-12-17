@@ -1,11 +1,9 @@
 #include "Dataset.h"
 
-Dataset* Dataset_readFromFile(char* filename) {
-    Dataset *dataset = (Dataset*)calloc(1, sizeof(Dataset));
 
-    int instanceCount, classCount, featureCount;
-
-    char path[100] = "../datasets/";
+/* --- Dataset parsing --- */
+FILE* open_dataset_file(char* filename) {
+char path[100] = DATASETS_PATH;
     strcat(path, filename);
 
     FILE *file = fopen(path, "r");
@@ -14,37 +12,63 @@ Dataset* Dataset_readFromFile(char* filename) {
         return NULL;
     }
 
-    // Get dataset properties from its first line
-    fscanf(file, "%d %d %d", &instanceCount, &classCount, &featureCount);
-
-
-    dataset->instanceCount = instanceCount;
-    dataset->classCount = classCount;
-    dataset->featureCount = featureCount;
-
-    dataset->instances = (Instance*)calloc(instanceCount, sizeof(Instance));
-
-
-    for (int i = 0; i < instanceCount; ++i) {
-        Instance *instance = &dataset->instances[i];
-        instance->values = (int*)calloc(featureCount, sizeof(int));
-        fscanf(file, "%d", &instance->classID);
-
-        // Insert values in the instance
-        for (int j = 0; j < featureCount; ++j) {
-            fscanf(file, "%d", &instance->values[j]);
-        }
-    }
-
-    fclose(file);
-
-    return dataset;
+    return file;
 }
 
+void parse_dataset_properties(FILE* file, Dataset* data) {
+    fscanf(file, "%d %d %d", &data->instanceCount, &data->classCount, &data->featureCount);
+}
 
+void parse_instance(FILE* file, Instance* instance, const int featureCount) {
+    // Features init
+    instance->values = (int*)calloc(featureCount, sizeof(int));
+    // Class id
+    fscanf(file, "%d", &instance->classID);
+    // features
+    for (int j = 0; j < featureCount; ++j) {
+        fscanf(file, "%d", &instance->values[j]);
+    }
+}
+
+void parse_instances(FILE* file, Dataset* data) {
+    data->instances = (Instance*)calloc(data->instanceCount, sizeof(Instance));
+
+    for (int i = 0; i < data->instanceCount; ++i) {
+        Instance *instance = &data->instances[i];
+        parse_instance(file, instance, data->featureCount);
+    }
+}
+
+/**
+ * @brief Dataset_readFromFile reads a dataset from a file
+ * @param filename the name of the file to read
+ * @return a pointer to the dataset
+ */
+Dataset* Dataset_readFromFile(char* filename) {
+    Dataset *data = (Dataset*)calloc(1, sizeof(Dataset));
+
+    // Open the file
+    FILE *file = open_dataset_file(filename);
+    if (!file) return NULL;
+
+    // Parse first line (dataset properties)
+    parse_dataset_properties(file, data);
+
+    // Parse instances
+    parse_instances(file, data);
+
+    fclose(file);
+    return data;
+}
+
+/**
+ * @brief Dataset_destroy frees the memory allocated for the dataset
+ * @param data the dataset to free
+ */
 void Dataset_destroy(Dataset *data) {
     if (data == NULL) return;
 
+    // Free instances features
     for (int i = 0; i < data->instanceCount; ++i) {
         free(data->instances[i].values);
     }
@@ -53,39 +77,72 @@ void Dataset_destroy(Dataset *data) {
     free(data);
 }
 
-Subproblem *Dataset_getSubproblem(Dataset *data) {
-    Subproblem *subproblem = (Subproblem *)calloc(1, sizeof(Subproblem));
-
+/* --- Subproblem --- */
+void subproblem_copy_dataset_properties(Subproblem *subproblem, Dataset *data) {
     subproblem->instanceCount = data->instanceCount;
     subproblem->capacity = data->instanceCount;
     subproblem->featureCount = data->featureCount;
-    subproblem->instances = data->instances;
     subproblem->classCount = data->classCount;
+}
 
+void subproblem_copy_dataset_instances(Subproblem *subproblem, Dataset *data) {
     subproblem->instances = (Instance **) calloc(subproblem->instanceCount, sizeof(Instance*));
     for (int i = 0; i < subproblem->instanceCount; ++i) {
         subproblem->instances[i] = &data->instances[i];
     }
+}
 
-    subproblem->classes = (SubproblemClass*) calloc(subproblem->classCount, sizeof(SubproblemClass*));
+void subproblem_generate_classes(Subproblem *subproblem) {
+    // Create the classes
+    subproblem->classes = (SubproblemClass *) calloc(subproblem->classCount, sizeof(SubproblemClass));
+
+    // Pre allocate the classes
     for (int i = 0; i < subproblem->classCount; ++i) {
-        subproblem->classes[i] = *(SubproblemClass*) calloc(1, sizeof(SubproblemClass)); // !TODO Check if the cast is clean
+        // We allocate the maximum possible size
+        subproblem->classes[i].instanceCount = 0;
+        subproblem->classes[i].instances = (Instance **) calloc(subproblem->instanceCount, sizeof(Instance*));
     }
 
-    int classID;
+    // For each instance
     for (int i = 0; i < subproblem->instanceCount; ++i) {
-        classID = subproblem->instances[i]->classID;
+        const int classID = subproblem->instances[i]->classID;
         SubproblemClass *currentClass = &subproblem->classes[classID];
 
-        // Resize the class instance and add it
-        currentClass->instances = realloc(currentClass->instances,(currentClass->instanceCount) * sizeof(Instance));
+        // Add the instance to the class
         currentClass->instances[currentClass->instanceCount] = subproblem->instances[i];
         currentClass->instanceCount++;
     }
 
+    // Reallocate the classes to the correct size
+    for (int i = 0; i < subproblem->classCount; ++i) {
+        subproblem->classes[i].instances = realloc(subproblem->classes[i].instances, subproblem->classes[i].instanceCount * sizeof(Instance*));
+    }
+}
+
+/**
+ * @brief Dataset_getSubproblem creates a subproblem from a dataset
+ * @param data the dataset
+ * @return a pointer to the subproblem
+ */
+Subproblem *Dataset_getSubproblem(Dataset *data) {
+    Subproblem *subproblem = (Subproblem *)calloc(1, sizeof(Subproblem));
+
+    subproblem_copy_dataset_properties(subproblem, data);
+
+    subproblem_copy_dataset_instances(subproblem, data);
+
+    subproblem_generate_classes(subproblem);
+
     return subproblem;
 }
 
+/**
+ * @brief Subproblem_create creates a subproblem from the given parameters
+ * @param maximumCapacity the maximum capacity of the subproblem
+ * @param featureCount the number of features
+ * @param classCount the number of classes
+ * @return a pointer to the subproblem
+ */
 Subproblem *Subproblem_create(int maximumCapacity, int featureCount, int classCount) {
     Subproblem *subproblem = (Subproblem *)calloc(1, sizeof(Subproblem));
 
@@ -94,21 +151,38 @@ Subproblem *Subproblem_create(int maximumCapacity, int featureCount, int classCo
     subproblem->classCount = classCount;
 
     subproblem->instances = (Instance **) calloc(maximumCapacity, sizeof(Instance*));
+
+    return subproblem;
 }
 
+void subproblem_class_destroy(SubproblemClass *subproblemClass) {
+    if (subproblemClass == NULL) return;
+
+    free(subproblemClass->instances);
+}
+
+/**
+ * @brief Subproblem_destroy frees the memory allocated for the subproblem
+ * @param subproblem the subproblem to free
+ */
 void Subproblem_destroy(Subproblem *subproblem) {
     if (subproblem == NULL) return;
 
     free(subproblem->instances);
 
     for (int i = 0; i < subproblem->classCount; ++i) {
-        free(subproblem->classes[i].instances);
+        subproblem_class_destroy(&subproblem->classes[i]);
     }
 
     free(subproblem->classes);
     free(subproblem);
 }
 
+/**
+ * @brief Subproblem_insert inserts an instance into the subproblem
+ * @param subproblem the subproblem
+ * @param instance the instance to insert
+ */
 void Subproblem_insert(Subproblem *subproblem, Instance *instance) {
     int i=0;
     while (subproblem->instances[i] && i<subproblem->instanceCount) i++;
@@ -120,9 +194,12 @@ void Subproblem_insert(Subproblem *subproblem, Instance *instance) {
     while (classes->instances[i] && i<classes->instanceCount) i++;
     classes->instances[i] = instance;
     classes->instanceCount ++;
-
 }
 
+/**
+ * @brief Subproblem_print prints the subproblem
+ * @param subproblem the subproblem to print
+ */
 void Subproblem_print(Subproblem *subproblem) {
     printf("Dataset with %d classes of %d features\n", subproblem->classCount, subproblem->featureCount);
     printf("Size = %d, capacity = %d\n", subproblem->instanceCount, subproblem->capacity);
