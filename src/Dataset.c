@@ -150,6 +150,7 @@ Subproblem *Subproblem_create(int maximumCapacity, int featureCount, int classCo
     subproblem->capacity = maximumCapacity;
     subproblem->classCount = classCount;
 
+
     subproblem->instances = (Instance **) calloc(subproblem->capacity, sizeof(Instance*));
 
     subproblem->classes = (SubproblemClass *)calloc(classCount, sizeof(SubproblemClass));

@@ -116,3 +116,23 @@ float DecisionTree_evaluate(DecisionTreeNode *tree, Dataset *data) {
     free(predictions);
     return (float)correct / (float)data->instanceCount;
 }
+
+int* gen_random_integers(int from, int to, int count) {
+    int *integers = (int*)calloc(count, sizeof(int));
+    for(int i=0; i<count; ++i) integers[i] = rand() % (to-from) + from;
+    return integers;
+}
+
+/**
+ * @brief Dataset_bagging creates a subproblem from a dataset by randomly selecting instances
+ * @param data the dataset
+ * @param proportion the proportion of instances to select
+ * @return a subproblem
+ */
+Subproblem *Dataset_bagging(Dataset *data, float proportion) {
+    int *integers = gen_random_integers(0, data->instanceCount, (int)(data->instanceCount * proportion));
+    Subproblem *sp = Subproblem_create((int)(data->instanceCount * proportion), data->featureCount, data->classCount);
+    for(int i=0; i<(int)(data->instanceCount * proportion); ++i) Subproblem_insert(sp, &data->instances[integers[i]]);
+    free(integers);
+    return sp;
+}
