@@ -47,6 +47,7 @@ int DecisionTree_predict(DecisionTreeNode *tree, Instance* instance);
  * @return a list of predicted class ids
  */
 int* DecisionTree_predictAll(DecisionTreeNode *tree, Dataset *data);
+
 /**
  * @brief DecisionTree_evaluate evaluates the accuracy of a decision tree on a dataset
  * @param tree the decision tree
@@ -54,5 +55,13 @@ int* DecisionTree_predictAll(DecisionTreeNode *tree, Dataset *data);
  * @return the accuracy between 0 and 1
  */
 float DecisionTree_evaluate(DecisionTreeNode *tree, Dataset *data);
+
+/**
+ * @brief Dataset_bagging creates a subproblem from a dataset by randomly selecting instances
+ * @param data the dataset
+ * @param proportion the proportion of instances to select
+ * @return a subproblem
+ */
+Subproblem *Dataset_bagging(Dataset *data, float proportion);
 
 #endif //DECISIONTREE_H
