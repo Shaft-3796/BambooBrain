@@ -1,11 +1,9 @@
 #include "Dataset.h"
 
-Dataset* Dataset_readFromFile(char* filename) {
-    Dataset *dataset = (Dataset*)calloc(1, sizeof(Dataset));
 
-    int instanceCount, classCount, featureCount;
-
-    char path[100] = "../datasets/";
+/* --- Dataset parsing --- */
+FILE* open_dataset_file(char* filename) {
+char path[100] = DATASETS_PATH;
     strcat(path, filename);
 
     FILE *file = fopen(path, "r");
@@ -14,44 +12,72 @@ Dataset* Dataset_readFromFile(char* filename) {
         return NULL;
     }
 
-    // Get dataset properties from its first line
-    fscanf(file, "%d %d %d", &instanceCount, &classCount, &featureCount);
+    return file;
+}
 
+void parse_dataset_properties(FILE* file, Dataset* dataset) {
+    fscanf(file, "%d %d %d", &dataset->instanceCount, &dataset->classCount, &dataset->featureCount);
+}
 
-    dataset->instanceCount = instanceCount;
-    dataset->classCount = classCount;
-    dataset->featureCount = featureCount;
-
-    dataset->instances = (Instance*)calloc(instanceCount, sizeof(Instance));
-
-
-    for (int i = 0; i < instanceCount; ++i) {
-        Instance *instance = &dataset->instances[i];
-        instance->values = (int*)calloc(featureCount, sizeof(int));
-        fscanf(file, "%d", &instance->classID);
-
-        // Insert values in the instance
-        for (int j = 0; j < featureCount; ++j) {
-            fscanf(file, "%d", &instance->values[j]);
-        }
+void parse_instance(FILE* file, Instance* instance, const int featureCount) {
+    // Features init
+    instance->values = (int*)calloc(featureCount, sizeof(int));
+    // Class id
+    fscanf(file, "%d", &instance->classID);
+    // features
+    for (int j = 0; j < featureCount; ++j) {
+        fscanf(file, "%d", &instance->values[j]);
     }
+}
+
+void parse_instances(FILE* file, Dataset* dataset) {
+    dataset->instances = (Instance*)calloc(dataset->instanceCount, sizeof(Instance));
+
+    for (int i = 0; i < dataset->instanceCount; ++i) {
+        Instance *instance = &dataset->instances[i];
+        parse_instance(file, instance, dataset->featureCount);
+    }
+}
+
+/**
+ * @brief Dataset_readFromFile reads a dataset from a file
+ * @param filename the name of the file to read
+ * @return a pointer to the dataset
+ */
+Dataset* Dataset_readFromFile(char* filename) {
+    Dataset *dataset = (Dataset*)calloc(1, sizeof(Dataset));
+
+    // Open the file
+    FILE *file = open_dataset_file(filename);
+    if (!file) return NULL;
+
+    // Parse first line (dataset properties)
+    parse_dataset_properties(file, dataset);
+
+    // Parse instances
+    parse_instances(file, dataset);
 
     fclose(file);
-
     return dataset;
 }
 
+/**
+ * @brief Dataset_destroy frees the memory allocated for the dataset
+ * @param dataset the dataset to free
+ */
+void Dataset_destroy(Dataset *dataset) {
+    if (dataset == NULL) return;
 
-void Dataset_destroy(Dataset *data) {
-    if (data == NULL) return;
-
-    for (int i = 0; i < data->instanceCount; ++i) {
-        free(data->instances[i].values);
+    // Free instances features
+    for (int i = 0; i < dataset->instanceCount; ++i) {
+        free(dataset->instances[i].values);
     }
 
-    free(data->instances);
-    free(data);
+    free(dataset->instances);
+    free(dataset);
 }
+
+/* --- Subproblem --- */
 
 Subproblem *Dataset_getSubproblem(Dataset *data) {
     Subproblem *subproblem = (Subproblem *)calloc(1, sizeof(Subproblem));

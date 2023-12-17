@@ -7,7 +7,9 @@
 #include <assert.h>
 #include <stdbool.h>
 
-// --- Base Structures ---
+#define DATASETS_PATH "../datasets/"
+
+
 typedef struct sInstance{
     int* values;
     int classID;
@@ -34,9 +36,19 @@ typedef struct sSubproblem{
     SubproblemClass *classes;
 } Subproblem;
 
-// --- Base functions ---
+
+/**
+ * @brief Dataset_readFromFile reads a dataset from a file
+ * @param filename the name of the file to read
+ * @return a pointer to the dataset
+ */
 Dataset* Dataset_readFromFile(char* filename);
-void Dataset_destroy(Dataset *data);
+
+/**
+ * @brief Dataset_destroy frees the memory allocated for the dataset
+ * @param dataset the dataset to free
+ */
+void Dataset_destroy(Dataset *dataset);
 
 Subproblem *Dataset_getSubproblem(Dataset *data);
 Subproblem *Subproblem_create(int maximumCapacity, int featureCount, int classCount);
