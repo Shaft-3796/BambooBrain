@@ -32,8 +32,8 @@ DecisionTreeNode* DecisionTree_create(Subproblem* sp, int currentDepth, int maxD
     }
     node->split = Split_compute(sp);
 
-    Subproblem *spl = Subproblem_create(1, sp->featureCount, sp->classCount);
-    Subproblem *spr = Subproblem_create(1, sp->featureCount, sp->classCount);
+    Subproblem *spl = Subproblem_create(sp->capacity, sp->featureCount, sp->classCount);
+    Subproblem *spr = Subproblem_create(sp->capacity, sp->featureCount, sp->classCount);
 
     // Split sp into 2 sub problems
     for (int i = 0; i < sp->instanceCount; ++i) {
