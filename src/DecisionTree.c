@@ -31,8 +31,8 @@ DecisionTreeNode* DecisionTree_create(Subproblem *sp, int currentDepth, int maxD
     if(currentDepth >= maxDepth) { node->classID = get_main_class(sp); return node;}
 
     // Subproblem is pure enough
-    int mainId = test_node_purity(sp, prunningThreshold);
-    if(mainId != -1) { node->classID = mainId; return node; }
+    node->classID = test_node_purity(sp, prunningThreshold);  // Set the classID to -1 allow to easily check if the node is not a leaf
+    if(node->classID != -1) return node;
 
     // Split the subproblem
     Subproblem *spl = Subproblem_create(sp->instanceCount, sp->featureCount, sp->classCount);
