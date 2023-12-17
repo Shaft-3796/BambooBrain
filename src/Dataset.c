@@ -154,7 +154,7 @@ Subproblem *Subproblem_create(int maximumCapacity, int featureCount, int classCo
 
     subproblem->classes = (SubproblemClass *)calloc(classCount, sizeof(SubproblemClass));
     for (int i = 0; i < classCount; ++i) {
-        subproblem->classes[i].instances = (Instance **)calloc(0, sizeof(Instance*));
+        subproblem->classes[i].instances = (Instance **)calloc(maximumCapacity, sizeof(Instance*));
     }
 
     return subproblem;
@@ -189,13 +189,12 @@ void Subproblem_destroy(Subproblem *subproblem) {
  * @param instance the instance to insert
  */
 void Subproblem_insert(Subproblem *subproblem, Instance *instance) {
-    subproblem->instances = realloc(subproblem->instances, (subproblem->instanceCount + 1) * sizeof(Instance*));
+    // We do not need to reallocate since we allocated the maximum possible size
     subproblem->instances[subproblem->instanceCount] = instance;
     subproblem->instanceCount++;
 
-    int classID = instance->classID;
-    SubproblemClass *class = &subproblem->classes[classID];
-    class->instances = realloc(class->instances, (class->instanceCount + 1) * sizeof(Instance*));
+    SubproblemClass *class = &subproblem->classes[instance->classID];
+    // We do not need to reallocate since we allocated the maximum possible size
     class->instances[class->instanceCount] = instance;
     class->instanceCount++;
 }
