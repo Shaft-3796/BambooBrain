@@ -46,14 +46,43 @@ Dataset* Dataset_readFromFile(char* filename);
 
 /**
  * @brief Dataset_destroy frees the memory allocated for the dataset
- * @param dataset the dataset to free
+ * @param data the dataset to free
  */
-void Dataset_destroy(Dataset *dataset);
+void Dataset_destroy(Dataset *data);
 
+/**
+ * @brief Dataset_getSubproblem creates a subproblem from a dataset
+ * @param data the dataset
+ * @return a pointer to the subproblem
+ */
 Subproblem *Dataset_getSubproblem(Dataset *data);
+
+/**
+ * @brief Subproblem_create creates a subproblem from the given parameters
+ * @param maximumCapacity the maximum capacity of the subproblem
+ * @param featureCount the number of features
+ * @param classCount the number of classes
+ * @return a pointer to the subproblem
+ */
 Subproblem *Subproblem_create(int maximumCapacity, int featureCount, int classCount);
+
+/**
+ * @brief Subproblem_destroy frees the memory allocated for the subproblem
+ * @param subproblem the subproblem to free
+ */
 void Subproblem_destroy(Subproblem *subproblem);
+
+/**
+ * @brief Subproblem_insert inserts an instance into the subproblem
+ * @param subproblem the subproblem
+ * @param instance the instance to insert
+ */
 void Subproblem_insert(Subproblem *subproblem, Instance *instance);
+
+/**
+ * @brief Subproblem_print prints the subproblem
+ * @param subproblem the subproblem to print
+ */
 void Subproblem_print(Subproblem *subproblem);
 
 
