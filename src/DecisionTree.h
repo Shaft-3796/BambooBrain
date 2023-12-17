@@ -32,5 +32,27 @@ int Decision_nodeCount(DecisionTreeNode* node);
  */
 void DecisionTree_destroy(DecisionTreeNode *decisionTree);
 
+/**
+ * @brief DecisionTree_predict predicts the class of an instance
+ * @param tree the decision tree
+ * @param instance the instance
+ * @return the class id
+ */
+int DecisionTree_predict(DecisionTreeNode *tree, Instance* instance);
+
+/**
+ * @brief DecisionTree_predictAll predicts the class of all instances in a dataset
+ * @param tree the decision tree
+ * @param data the dataset
+ * @return a list of predicted class ids
+ */
+int* DecisionTree_predictAll(DecisionTreeNode *tree, Dataset *data);
+/**
+ * @brief DecisionTree_evaluate evaluates the accuracy of a decision tree on a dataset
+ * @param tree the decision tree
+ * @param data the dataset
+ * @return the accuracy between 0 and 1
+ */
+float DecisionTree_evaluate(DecisionTreeNode *tree, Dataset *data);
 
 #endif //DECISIONTREE_H

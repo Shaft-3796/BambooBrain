@@ -73,3 +73,46 @@ void DecisionTree_destroy(DecisionTreeNode *decisionTree) {
 
     free(decisionTree);
 }
+
+/**
+ * @brief DecisionTree_predict predicts the class of an instance
+ * @param tree the decision tree
+ * @param instance the instance
+ * @return the class id
+ */
+int DecisionTree_predict(DecisionTreeNode *tree, Instance* instance) {
+    if(tree->classID != -1) return tree->classID;  // Leaf node
+    assert (tree->left && tree->right);  // Should always be true
+    if(instance->values[tree->split.featureID] <= tree->split.threshold) return DecisionTree_predict(tree->left, instance);
+    return DecisionTree_predict(tree->right, instance);
+}
+
+/**
+ * @brief DecisionTree_predictAll predicts the class of all instances in a dataset
+ * @param tree the decision tree
+ * @param data the dataset
+ * @return a list of predicted class ids
+ */
+int* DecisionTree_predictAll(DecisionTreeNode *tree, Dataset *data) {
+    int *predictions = (int*)calloc(data->instanceCount, sizeof(int));
+    for(int i=0; i<data->instanceCount; ++i) {
+        predictions[i] = DecisionTree_predict(tree, &data->instances[i]);
+    }
+    return predictions;
+}
+
+/**
+ * @brief DecisionTree_evaluate evaluates the accuracy of a decision tree on a dataset
+ * @param tree the decision tree
+ * @param data the dataset
+ * @return the accuracy between 0 and 1
+ */
+float DecisionTree_evaluate(DecisionTreeNode *tree, Dataset *data) {
+    int *predictions = DecisionTree_predictAll(tree, data);
+    int correct = 0;
+    for(int i=0; i<data->instanceCount; ++i) {
+        if(predictions[i] == data->instances[i].classID) correct++;
+    }
+    free(predictions);
+    return (float)correct / (float)data->instanceCount;
+}
