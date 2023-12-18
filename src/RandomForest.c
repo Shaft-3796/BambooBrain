@@ -18,7 +18,8 @@ RandomForest *RandomForest_create(
     ) {
     // Create the random forest
     RandomForest *rf = (RandomForest*)calloc(1, sizeof(RandomForest));
-    rf->treeCount = numberOfTrees; rf->classCount = data->classCount;
+    rf->treeCount = numberOfTrees;
+    rf->classCount = data->classCount;
     rf->trees = (DecisionTreeNode**)calloc(numberOfTrees, sizeof(DecisionTreeNode*));
 
     // Fill the random forest with trees
