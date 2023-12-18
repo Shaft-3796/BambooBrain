@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 99)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
-file(GLOB SOURCES "src/*.c" "src/*.h")
+file(GLOB SOURCES "src/*.c" "src/*.h" "src/dynamic/*.c" "src/dynamic/*.h")
 
 # EXECUTABLE
 add_executable(bamboo ${SOURCES})
