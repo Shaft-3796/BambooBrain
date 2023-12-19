@@ -5,6 +5,8 @@
 #include "UserInterface.h"
 
 #include "DecisionTree.h"
+#include "Dataset.h"
+#include "ModelTools.h"
 
 int max(int a, int b) {
     return a > b ? a : b;
@@ -74,21 +76,6 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
     SDL_UnlockTexture(texture);
 }
 
-void predict_draw(DecisionTreeNode *tree) {
-    char tmp_path[128] = "test.txt";
-    Dataset *tmpData = Dataset_readFromFile(tmp_path);
-
-    Subproblem *sp_tmp = Dataset_getSubproblem(tmpData);
-    printf("------ TMP data ------\n");
-    Subproblem_print(sp_tmp);
-    int *pred = DecisionTree_predictAll(tree, sp_tmp);
-
-    for (int i = 0; i < sp_tmp->instanceCount; ++i) {
-        printf("%d: %d\n", i, pred[i]);
-    }
-
-    Subproblem_destroy(sp_tmp);
-}
 
 /**
  * \brief Save a texture into a dataset of one instance
@@ -109,7 +96,7 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
     pixels = tmp;
 
     char path[1024];
-    snprintf(path, sizeof(path), "%s%s", DATASETS_PATH, filename);
+    snprintf(path, sizeof(path), "%s%s", "datasets/", filename);
 
     FILE *out = fopen(path, "w");
     if (out == NULL) {
@@ -131,7 +118,6 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
     fclose(out);
     SDL_UnlockTexture(texture);
     printf("File created with success!\n");
-    predict_draw(tree);
     return;
 }
 
@@ -144,7 +130,7 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
  * \return void
  */
 void load_texture(const char* filename, SDL_Texture* texture, SDL_Window *window) {
-    Dataset *trainData = Dataset_readFromFile(filename);
+    Dataset *trainData = parse_dataset_from_file(filename);
     Uint8 intensity;
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
         for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
