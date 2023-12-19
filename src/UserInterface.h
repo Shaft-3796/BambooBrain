@@ -16,11 +16,13 @@
 #include "SDL2/SDL_image.h"
 #include <math.h>
 #include "stdbool.h"
+#include "Dataset.h"
+#include "DecisionTree.h"
 
 int init_sdl();
-int create_ui();
+int create_ui(DecisionTreeNode *tree);
 
-void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window);
+void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, DecisionTreeNode *tree);
 void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x, int y, bool add);
 void draw_circle(SDL_Texture *texture, int x, int y, float radius);
 void reset_drawing(SDL_Texture *texture);

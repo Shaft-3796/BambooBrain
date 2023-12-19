@@ -4,6 +4,8 @@
 
 #include "UserInterface.h"
 
+#include "DecisionTree.h"
+
 int max(int a, int b) {
     return a > b ? a : b;
 }
@@ -72,6 +74,22 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
     SDL_UnlockTexture(texture);
 }
 
+void predict_draw(DecisionTreeNode *tree) {
+    char tmp_path[128] = "test.txt";
+    Dataset *tmpData = Dataset_readFromFile(tmp_path);
+
+    Subproblem *sp_tmp = Dataset_getSubproblem(tmpData);
+    printf("------ TMP data ------\n");
+    Subproblem_print(sp_tmp);
+    int *pred = DecisionTree_predictAll(tree, sp_tmp);
+
+    for (int i = 0; i < sp_tmp->instanceCount; ++i) {
+        printf("%d: %d\n", i, pred[i]);
+    }
+
+    Subproblem_destroy(sp_tmp);
+}
+
 /**
  * \brief Save a texture into a dataset of one instance
  * \param filename the filename of the output file
@@ -79,7 +97,7 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
  * \param window the SDL window
  * \return void
  */
-void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window) {
+void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, DecisionTreeNode *tree) {
     void* tmp;
     Uint32 *pixels;
     int pitch;
@@ -90,18 +108,21 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
     SDL_LockTexture(texture, NULL, &tmp, &pitch);
     pixels = tmp;
 
-    FILE *out = fopen(filename, "w");
+    char path[1024];
+    snprintf(path, sizeof(path), "%s%s", DATASETS_PATH, filename);
+
+    FILE *out = fopen(path, "w");
     if (out == NULL) {
-        fprintf(stderr, "Erreur while opening/creatinge %s\n", filename);
+        fprintf(stderr, "Erreur while opening/creating %s\n", filename);
         SDL_UnlockTexture(texture);
         return;
     }
 
     // Write the first line giving size of the dataset
-    fprintf(out, "1 1 %d\n", TEXTURE_WIDTH*TEXTURE_HEIGHT);
+    fprintf(out, "1 1 %d\n6	", TEXTURE_WIDTH*TEXTURE_HEIGHT);
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
         for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
-            Uint32 pixel = pixels[j * TEXTURE_WIDTH + i];
+            Uint32 pixel = pixels[i * TEXTURE_WIDTH + j];
             SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
             fprintf(out, "%d ", r); // Write each feature
         }
@@ -109,7 +130,28 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
 
     fclose(out);
     SDL_UnlockTexture(texture);
-    printf("File created with succes!\n");
+    printf("File created with success!\n");
+    predict_draw(tree);
+    return;
+}
+
+
+/**
+ * \brief Load a dataset and display it on the texture
+ * \param filename the filename of the output file
+ * \param texture the SDL image to export
+ * \param window the SDL window
+ * \return void
+ */
+void load_texture(const char* filename, SDL_Texture* texture, SDL_Window *window) {
+    Dataset *trainData = Dataset_readFromFile(filename);
+    Uint8 intensity;
+    for (int i = 0; i < TEXTURE_WIDTH; ++i) {
+        for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
+            intensity = trainData->instances[0].values[j * TEXTURE_WIDTH + i];
+            draw_pixel(texture, intensity, intensity, intensity, 255, i, j, false);
+        }
+    }
     return;
 }
 
@@ -154,7 +196,7 @@ void reset_drawing(SDL_Texture *texture) {
  * @brief Create a window to allow user interact with
  * @return Exit code
  */
-int create_ui() {
+int create_ui(DecisionTreeNode *tree) {
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
     SDL_Texture *texture = NULL;
@@ -211,9 +253,10 @@ int create_ui() {
                             reset_drawing(texture);
                             break;
                         case SDL_SCANCODE_KP_ENTER:
-                            save_texture("../temp/test.txt", texture, window);
-                            quit = 1;
+                            save_texture("test.txt", texture, window, tree);
                             break;
+                        case SDL_SCANCODE_T:
+                            load_texture("test.txt", texture, window);
                         default:
                             break;
                     }
@@ -230,7 +273,7 @@ int create_ui() {
                         int x = evt.motion.x*TEXTURE_WIDTH/w;
                         int y = evt.motion.y*TEXTURE_HEIGHT/h;
 
-                        draw_circle(texture, x, y, 3.0);
+                        draw_circle(texture, x, y, 2.3);
                     }
 
                 default:
