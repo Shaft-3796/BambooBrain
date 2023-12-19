@@ -4,9 +4,6 @@
 
 #include "UserInterface.h"
 
-#include "DecisionTree.h"
-#include "Dataset.h"
-#include "ModelTools.h"
 
 int max(int a, int b) {
     return a > b ? a : b;
@@ -76,6 +73,27 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
     SDL_UnlockTexture(texture);
 }
 
+/**
+ * \brief load saved drawing from file and predict its class from a given tree.
+ * \param tree the tree
+ * \param args the arguments for the predict_from_tree function
+ */
+void predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
+    char tmp_path[128] = "../datasets/PENDIGITS_train.txt";
+    Dataset *tmpData = parse_dataset_from_file(tmp_path);
+
+    Subproblem *sp_tmp = create_subproblem_from_dataset(tmpData);
+
+    printf("------ TMP data ------\n");
+    print_subproblem(sp_tmp);
+    int *pred = predict_all_from_tree(args, tree, tmpData);
+
+    for (int i = 0; i < sp_tmp->instance_count; ++i) {
+        printf("%d: %d\n", i, pred[i]);
+    }
+
+    destroy_subproblem(sp_tmp);
+}
 
 /**
  * \brief Save a texture into a dataset of one instance
@@ -84,7 +102,7 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
  * \param window the SDL window
  * \return void
  */
-void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, DecisionTreeNode *tree) {
+void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, DecisionTreeNode *tree, PredictFromTreeArgs *args) {
     void* tmp;
     Uint32 *pixels;
     int pitch;
@@ -95,10 +113,8 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
     SDL_LockTexture(texture, NULL, &tmp, &pitch);
     pixels = tmp;
 
-    char path[1024];
-    snprintf(path, sizeof(path), "%s%s", "datasets/", filename);
 
-    FILE *out = fopen(path, "w");
+    FILE *out = fopen(filename, "w");
     if (out == NULL) {
         fprintf(stderr, "Erreur while opening/creating %s\n", filename);
         SDL_UnlockTexture(texture);
@@ -106,7 +122,7 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
     }
 
     // Write the first line giving size of the dataset
-    fprintf(out, "1 1 %d\n6	", TEXTURE_WIDTH*TEXTURE_HEIGHT);
+    fprintf(out, "1 1 %d\n0	", TEXTURE_WIDTH*TEXTURE_HEIGHT);
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
         for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
             Uint32 pixel = pixels[i * TEXTURE_WIDTH + j];
@@ -118,6 +134,7 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
     fclose(out);
     SDL_UnlockTexture(texture);
     printf("File created with success!\n");
+    predict_drawing(tree, args);
     return;
 }
 
@@ -182,7 +199,7 @@ void reset_drawing(SDL_Texture *texture) {
  * @brief Create a window to allow user interact with
  * @return Exit code
  */
-int create_ui(DecisionTreeNode *tree) {
+int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
     SDL_Texture *texture = NULL;
@@ -239,7 +256,7 @@ int create_ui(DecisionTreeNode *tree) {
                             reset_drawing(texture);
                             break;
                         case SDL_SCANCODE_KP_ENTER:
-                            save_texture("../datasets/test.txt", texture, window, tree);
+                            save_texture("../datasets/test.txt", texture, window, tree, args);
                             break;
                         case SDL_SCANCODE_T:
                             load_texture("../datasets/test.txt", texture, window);
