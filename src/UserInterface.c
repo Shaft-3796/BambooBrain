@@ -127,7 +127,7 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
         for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
             Uint32 pixel = pixels[i * TEXTURE_WIDTH + j];
             SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
-            fprintf(out, "%d ", r); // Write each feature
+            fprintf(out, "%d ", r ? 255 : 0); // Write each feature
         }
     }
 
@@ -276,7 +276,7 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
                         int x = evt.motion.x*TEXTURE_WIDTH/w;
                         int y = evt.motion.y*TEXTURE_HEIGHT/h;
 
-                        draw_circle(texture, x, y, 1.4);
+                        draw_circle(texture, x, y, 1.2);
                     }
 
                 default:

@@ -12,8 +12,9 @@
 int main(int argc, char** argv){
     srand(time(NULL));
 
-    char path[128] = "datasets/PENDIGITS_train.txt";
-    char test_path[128] = "datasets/PENDIGITS_test.txt";
+    char path[128] = "../datasets/BIN_train.txt";
+    char test_path[128] = "../datasets/BIN_test.txt";
+
 
     Dataset *trainData = parse_dataset_from_file(path);
     Dataset *testData = parse_dataset_from_file(test_path);
@@ -37,6 +38,7 @@ int main(int argc, char** argv){
     PredictFromTreeArgs pfta = {PREDICT_FROM_TREE_MODE_THRESHOLD};
     printf("Train: %f, Test: %f\n", evaluate_decision_tree(&pfta, tree, trainData), evaluate_decision_tree(&pfta, tree, testData));
 
+    create_ui(tree, &pfta);
 
     destroy_decision_tree(tree);
 
@@ -49,7 +51,6 @@ int main(int argc, char** argv){
     PredictFromModelArgs pfma = {PREDICT_FROM_MODEL_MODE_RANDOM_FOREST_MAJORITY, .predict_from_tree_args=&pfta};
     printf("Train: %f, Test: %f\n", evaluate_model(&pfma, model, trainData), evaluate_model(&pfma, model, testData));
 
-    // create_ui(tree, &pfta);
 
     destroy_subproblem(sp);
     destroy_subproblem(sp_test);
