@@ -1,45 +1,33 @@
 #include "CreateModel.h"
 
 /**
- * @brief create_random_forest creates a random forest model
+ * @brief create_random_forest creates a random forest model (MODEL_MODE_RANDOM_FOREST)
+ * @param config the configuration for the create_model function
+ * - bagging_config: the configuration for the bagging function
+ * - create_tree_config: the configuration for the create_tree function
+ * - tree_count: the number of trees in the forest
+ * @param args mode specific arguments for the create_model function
+ * No arguments are expected.
  * @param data the dataset
- * @param bagging_args the arguments for the bagg_dataset function
- * @param create_tree_args the arguments for the create_tree function
- * @param tree_count the number of trees in the forest
  * @return a pointer to the model
  */
-Model *create_random_forest(Dataset *data, BaggingArgs *bagging_args, CreateTreeArgs *create_tree_args, int tree_count) {
+Model *create_random_forest(const CreateModelConfig *config, const CreateModelArgs *args, const Dataset *data) {
     // Create the random forest
     Model *rf = (Model*) calloc(1, sizeof(Model));
-    rf->tree_count = tree_count; rf->class_count = data->class_count;
-    rf->trees = (DecisionTreeNode**)calloc(tree_count, sizeof(DecisionTreeNode*));
+
+    rf->tree_count = config->tree_count; rf->class_count = data->class_count;
+    rf->trees = (DecisionTreeNode**) calloc(config->tree_count, sizeof(DecisionTreeNode*));
 
     // Fill the random forest with trees
-    bagging_args->bags = tree_count;
-    bagging_args->data = data;
-    Subproblem **subproblems = bagg_dataset(bagging_args);
+    const BaggingArgs bagging_args = {};
+    Subproblem **subproblems = config->bagging_config->bagging_function(config->bagging_config, &bagging_args, data, config->tree_count);
 
 
-    for(int i=0; i<tree_count; ++i) {
-        create_tree_args->sp = subproblems[i];
-        rf->trees[i] = create_tree(create_tree_args);
+    for(int i=0; i<config->tree_count; ++i) {
+        const CreateTreeArgs create_tree_args = {.current_depth=0};
+        rf->trees[i] = config->create_tree_config->create_tree_function(config->create_tree_config, &create_tree_args, subproblems[i]);
         destroy_subproblem(subproblems[i]);
     }
 
     return rf;
-}
-
-/**
- * @brief create_model creates a model
- * @param args the arguments for the model_create function
- * @return a pointer to the model
- */
-Model *create_model(CreateModelArgs *args){
-    switch(args->mode) {
-        case MODEL_MODE_RANDOM_FOREST:
-            return (Model*)create_random_forest(args->data, args->bagging_args, args->create_tree_args, args->tree_count);
-        default:
-            printf("Error: unknown model create mode mode\n");
-        return NULL;
-    }
 }

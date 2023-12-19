@@ -6,27 +6,40 @@
 
 /**
  * @brief CreateModelArgs the arguments for the create_model function
- * Common:
- * @param data the dataset
- * Specific:
- * @param bagging_args used for MODEL_MODE_RANDOM_FOREST
- * @param create_tree_args used for MODEL_MODE_RANDOM_FOREST
- * @param tree_count used for MODEL_MODE_RANDOM_FOREST
  */
 typedef struct CreateModelArgs {
-    ModelMode mode;
-    /* Common arguments */
-    Dataset *data;
-    /* Specific arguments */
-    BaggingArgs *bagging_args;
-    CreateTreeArgs *create_tree_args;
-    int tree_count;
 
 } CreateModelArgs;
 
 /**
- * @brief create_model creates a model
- * @param args the arguments for the model_create function
+ * @brief CreateModelConfig the configuration for the CreateModel function
+ * @param mode the mode of the create_model function
+ * @param create_model_function the function to call to create the model
+ * @param bagging_config the configuration for the bagging function
+ * For MODEL_MODE_RANDOM_FOREST
+ * @param create_tree_config the configuration for the create_tree function
+ * For MODEL_MODE_RANDOM_FOREST
+ * @param tree_count the number of trees in the model
+ * For MODEL_MODE_RANDOM_FOREST
+ */
+typedef struct CreateModelConfig {
+    const ModelMode mode;
+    Model* (*create_model_function)(const struct CreateModelConfig *config, const CreateModelArgs *args, const Dataset *data);
+
+    BaggingConfig *bagging_config;
+    CreateTreeConfig *create_tree_config;
+    int tree_count;
+} CreateModelConfig;
+
+/**
+ * @brief create_random_forest creates a random forest model (MODEL_MODE_RANDOM_FOREST)
+ * @param config the configuration for the create_model function
+ * - bagging_config: the configuration for the bagging function
+ * - create_tree_config: the configuration for the create_tree function
+ * - tree_count: the number of trees in the forest
+ * @param args mode specific arguments for the create_model function
+ * No arguments are expected.
+ * @param data the dataset
  * @return a pointer to the model
  */
-Model *create_model(CreateModelArgs *args);
+Model *create_random_forest(const CreateModelConfig *config, const CreateModelArgs *args, const Dataset *data);

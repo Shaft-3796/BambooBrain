@@ -9,6 +9,60 @@
 
 
 int main(int argc, char** argv){
+    /* Algorithm configuration */
+    // Creation
+    CreateModelConfig create_model_config = {
+        .mode = MODEL_MODE_RANDOM_FOREST,
+        .create_model_function = create_random_forest,
+        .tree_count = 10,
+    };
+
+    BaggingConfig bagging_config = {
+        .mode = BAGGING_MODE_PROPORTIONAL,
+        .bagging_function = bagging_from_proportion,
+        .proportion = 0.5,
+    };
+    create_model_config.bagging_config = &bagging_config;
+
+    CreateTreeConfig create_tree_config = {
+        .mode = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
+        .create_tree_function = create_decision_tree_from_prunning_treshold,
+        .max_depth = 30,
+        .prunning_threshold = 1,
+    };
+    create_model_config.create_tree_config = &create_tree_config;
+
+    ComputeSplitConfig compute_split_config = {
+        .mode = COMPUTE_SPLIT_MODE_PUREST_THRESHOLD,
+        .compute_split_function = compute_purest_threshold_split,
+    };
+    create_tree_config.compute_split_config = &compute_split_config;
+
+    ThresholdConfig threshold_config = {
+        .mode = THRESHOLD_MODE_MID_MIN_MAX,
+        .threshold_function = get_subproblem_threshold_min_max,
+    };
+    compute_split_config.threshold_config = &threshold_config;
+
+    ImpurityConfig impurity_config = {
+        .mode = IMPURITY_MODE_GINI,
+        .impurity_function = gini_impurity,
+    };
+    compute_split_config.impurity_config = &impurity_config;
+
+    // Prediction
+    PredictFromModelConfig predict_from_model_config = {
+        .mode = PREDICT_FROM_MODEL_MODE_RANDOM_FOREST_MAJORITY,
+        .predict_from_model_function = predict_from_random_forest_majority,
+    };
+
+    PredictFromTreeConfig predict_from_tree_config = {
+        .mode = PREDICT_FROM_TREE_MODE_THRESHOLD,
+        .predict_from_tree_function = predict_from_tree_and_threshold,
+    };
+    predict_from_model_config.predict_from_tree_config = &predict_from_tree_config;
+
+
     srand(time(NULL));
 
     char path[128] = "datasets/PENDIGITS_train.txt";
@@ -26,26 +80,22 @@ int main(int argc, char** argv){
     print_subproblem(sp_test);
 
     printf("[---- Single Decision Tree ----]\n");
-    ThresholdArgs ta = {THRESHOLD_MODE_MID_MIN_MAX};
-    ImpurityArgs ia = {IMPURITY_MODE_GINI};
-    ComputeSplitArgs csa = {COMPUTE_SPLIT_MODE_PUREST_THRESHOLD, .threshold_args=&ta, .impurity_args=&ia};
-    CreateTreeArgs cta = {CREATE_TREE_MODE_PRUNNING_THRESHOLD, .sp=sp, .compute_split_args=&csa, .max_depth=15, .prunning_threshold=0.9};
-    DecisionTreeNode *tree = create_tree(&cta);
+    DecisionTreeNode *tree = create_tree_config.create_tree_function(&create_tree_config, &(CreateTreeArgs){.current_depth=0}, sp);
     printf("Génération d'un arbre de %d nœuds\n", count_decision_tree_nodes(tree));
 
-    PredictFromTreeArgs pfta = {PREDICT_FROM_TREE_MODE_THRESHOLD};
-    printf("Train: %f, Test: %f\n", evaluate_decision_tree(&pfta, tree, trainData), evaluate_decision_tree(&pfta, tree, testData));
+    const float train_accuracy = evaluate_decision_tree(&predict_from_tree_config, tree, trainData);
+    const float test_accuracy = evaluate_decision_tree(&predict_from_tree_config, tree, testData);
+    printf("Train: %f, Test: %f\n", train_accuracy, test_accuracy);
 
     destroy_decision_tree(tree);
 
     printf("[---- Random Forest ----]\n");
-    BaggingArgs ba = {BAGGING_MODE_PROPORTION, .proportion=0.5};
-    CreateModelArgs mca = {MODEL_MODE_RANDOM_FOREST, .data=trainData, .bagging_args=&ba, .create_tree_args=&cta, .tree_count=10};
-    Model *model = create_model(&mca);
+    Model *model = create_model_config.create_model_function(&create_model_config, &(CreateModelArgs){}, trainData);
     printf("Génération d'une forêt de %d arbres de %d nœuds\n", model->tree_count, count_model_nodes(model));
 
-    PredictFromModelArgs pfma = {PREDICT_FROM_MODEL_MODE_RANDOM_FOREST_MAJORITY, .predict_from_tree_args=&pfta};
-    printf("Train: %f, Test: %f\n", evaluate_model(&pfma, model, trainData), evaluate_model(&pfma, model, testData));
+    const float train_accuracy_rf = evaluate_model(&predict_from_model_config, model, trainData);
+    const float test_accuracy_rf = evaluate_model(&predict_from_model_config, model, testData);
+    printf("Train: %f, Test: %f\n", train_accuracy_rf, test_accuracy_rf);
 
     destroy_subproblem(sp);
     destroy_subproblem(sp_test);

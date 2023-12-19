@@ -14,28 +14,47 @@ typedef enum CreateTree {
 
 /**
  * @brief CreateTreeArgs the arguments for the create_tree function
- * Common:
- * @param subproblem the subproblem
- * Specific:
- * @param compute_split_args used for CREATE_TREE_MODE_PRUNNING_THRESHOLD to define the compute_split function
- * @param current_depth used for CREATE_TREE_MODE_PRUNNING_THRESHOLD, the current depth of the tree
- * @param max_depth used for CREATE_TREE_MODE_PRUNNING_THRESHOLD, the maximum depth of the tree
- * @param prunning_threshold used for CREATE_TREE_MODE_PRUNNING_THRESHOLD, the prunning threshold
+ * @param current_depth the current depth of the tree
+ * For CREATE_TREE_MODE_PRUNNING_THRESHOLD
  */
 typedef struct CreateTreeArgs {
-    CreateTreeMode mode;
-    /* Common arguments */
-    Subproblem *sp;
-    /* Specific arguments */
-    ComputeSplitArgs *compute_split_args;
     int current_depth;
-    int max_depth;
-    float prunning_threshold;
 } CreateTreeArgs;
 
 /**
- * @brief create_tree creates a decision tree from a subproblem
- * @param args the arguments for the create_tree function
- * @return
+ * @brief CreateTreeConfig the configuration for the CreateTree function
+ * @param mode the mode of the create_tree function
+ * @param create_tree_function the function to call to create the tree
+ * @param compute_split_config the configuration for the compute_split function
+ * For CREATE_TREE_MODE_PRUNNING_THRESHOLD
+ * @param max_depth the maximum depth of the tree
+ * For CREATE_TREE_MODE_PRUNNING_THRESHOLD
+ * @param prunning_threshold the prunning threshold
+ * For CREATE_TREE_MODE_PRUNNING_THRESHOLD
  */
-DecisionTreeNode *create_tree(CreateTreeArgs *args);
+typedef struct CreateTreeConfig {
+    const CreateTreeMode mode;
+    DecisionTreeNode* (*create_tree_function)(const struct CreateTreeConfig *config, const CreateTreeArgs *args, const Subproblem *sp);
+
+    ComputeSplitConfig *compute_split_config;
+    int max_depth;
+    float prunning_threshold;
+} CreateTreeConfig;
+
+
+/**
+ * @brief create_decision_tree_from_prunning_treshold creates a decision tree from a subproblem based on a prunning threshold (CREATE_TREE_MODE_PRUNNING_THRESHOLD)
+ * @param config the configuration for the create_tree function
+ * - compute_split_config: the configuration for the compute_split function
+ * - max_depth: the maximum depth of the tree
+ * - prunning_threshold: the prunning threshold
+ * @param args mode specific arguments for the create_tree function
+ * - current_depth: the current depth of the tree
+ * @param sp the subproblem
+ * @return a pointer to the decision tree
+ */
+DecisionTreeNode* create_decision_tree_from_prunning_treshold(
+    const CreateTreeConfig *config,
+    const CreateTreeArgs *args,
+    const Subproblem *sp
+    );
