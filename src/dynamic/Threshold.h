@@ -12,22 +12,33 @@ typedef enum Threshold {
 
 /**
  * @brief ThresholdArgs the arguments for the threshold function
- * Common:
- * @param sp the subproblem
- * Specific:
- * @param featureID used for THRESHOLD_MODE_MID_MIN_MAX to choose the feature.
  */
 typedef struct ThresholdArgs {
-    ThresholdMode mode;
-    /* Common arguments */
-    Subproblem *sp;
-    /* Specific arguments */
-    int feature_id;
 } ThresholdArgs;
 
 /**
- * @brief return a threshold for a given subproblem
- * @param args the arguments for the threshold function
+ * @brief ThresholdConfig the configuration for the threshold function
+ * @param mode the mode of the threshold function
+ * @param threshold_function the function to call to generate dataset threshold
+ */
+typedef struct ThresholdConfig {
+    const ThresholdMode mode;
+    float (*threshold_function)(const struct ThresholdConfig *config, const ThresholdArgs *args, const Subproblem *sp, int feature_id);
+} ThresholdConfig;
+
+
+/**
+ * @brief Computes the threshold to use for a given feature based on (minFeatureValue + maxFeatureValue) / 2 (THRESHOLD_MODE_MID_MIN_MAX)
+ * @param config the configuration for the threshold function
+ * @param args mode specific arguments for the threshold function
+ * No arguments are expected.
+ * @param sp the subproblem
+ * @param feature_id the feature to split on
  * @return the threshold
  */
-float get_subproblem_threshold(const ThresholdArgs *args);
+float get_subproblem_threshold_min_max(
+    const ThresholdConfig *config,
+    const ThresholdArgs *args,
+    const Subproblem *sp,
+    int feature_id
+    );

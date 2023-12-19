@@ -1,25 +1,27 @@
 #include "ComputeSplit.h"
 
 /**
- * @brief compute_purest_threshold_split compute the best split for a subproblem based on the purest threshold
+ * @brief compute_purest_threshold_split compute the best split for a subproblem based on the purest threshold (COMPUTE_SPLIT_MODE_PUREST_THRESHOLD)
+ * @param config the configuration for the split_compute function
+ * - threshold_config: the configuration for the threshold function
+ * - impurity_config: the configuration for the impurity function
+ * @param args mode specific arguments for the split_compute function
+ * No arguments are expected.
  * @param sp the subproblem
- * @param threshold_args the arguments for the threshold function
- * @param impurity_args the arguments for the impurity function
  * @return the split
  */
-static Split compute_purest_threshold_split(Subproblem *sp, ThresholdArgs *threshold_args, ImpurityArgs *impurity_args) {
+Split compute_purest_threshold_split(const ComputeSplitConfig *config, const ComputeSplitArgs *args, const Subproblem *sp) {
     Split split = {0, 0.0};
     float impurity = 1.0;
 
     for(int feature_id=0; feature_id < sp->feature_count; feature_id++) {
 
-        threshold_args->sp = sp;
-        threshold_args->feature_id = feature_id;
-        const float _threshold = get_subproblem_threshold(threshold_args);
+        // Compute the threshold for the feature
+        ThresholdArgs threshold_args = {};
+        const float _threshold = config->threshold_config->threshold_function(config->threshold_config, &threshold_args, sp, feature_id);
 
-        impurity_args->feature_id = feature_id; impurity_args->threshold = _threshold;
-        impurity_args->sp = sp;
-        const float _impurity = get_subproblem_impurity(impurity_args);
+        ImpurityArgs impurity_args = {.feature_id=feature_id, .threshold=_threshold};
+        const float _impurity = config->impurity_config->impurity_function(config->impurity_config, &impurity_args, sp);
 
         if(_impurity <= impurity) {
             split.feature_id = feature_id; split.threshold = _threshold;
@@ -28,19 +30,4 @@ static Split compute_purest_threshold_split(Subproblem *sp, ThresholdArgs *thres
     }
 
     return split;
-}
-
-/**
- * @brief compute_split computes the best split for a subproblem
- * @param args the arguments for the split_compute function
- * @return the split
- */
-Split compute_split(const ComputeSplitArgs *args) {
-    switch(args->mode) {
-        case COMPUTE_SPLIT_MODE_PUREST_THRESHOLD:
-            return compute_purest_threshold_split(args->sp, args->threshold_args, args->impurity_args);
-        default:
-            printf("Error: unknown split mode\n");
-        return (Split){0, 0.0};
-    }
 }

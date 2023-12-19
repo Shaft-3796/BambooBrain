@@ -1,19 +1,22 @@
 #include "PredictFromModel.h"
 
 /**
- * @brief predict_from_random_forest_majority predicts the class of an instance based on a random forest by majority
- * @param predict_from_tree_args the arguments for the predict_from_tree function
+ * @brief predict_from_random_forest_majority predicts the class of an instance based on a random forest by majority (PREDICT_FROM_MODEL_MODE_RANDOM_FOREST_MAJORITY)
+ * @param config the configuration for the predict_from_model function
+ * - predict_from_tree_config: the configuration for the predict_from_tree function
+ * @param args mdoe specific arguments for the predict_from_model function
+ * No arguments are expected.
  * @param model the model
  * @param instance the instance
  * @return the class id
  */
-int predict_from_random_forest_majority(PredictFromTreeArgs *predict_from_tree_args, const Model *model, Instance *instance) {
+float predict_from_random_forest_majority(const PredictFromModelConfig *config, const PredictFromModelArgs *args, const Model *model, const Instance *instance) {
     int *votes = (int*) calloc(model->class_count, sizeof(int));
 
     for(int i=0; i<model->tree_count; ++i) {
-        predict_from_tree_args->tree = model->trees[i];
-        predict_from_tree_args->instance = instance;
-        votes[predict_from_tree(predict_from_tree_args)]++;
+        PredictFromTreeArgs predict_from_tree_args = {};
+        const int prediction = config->predict_from_tree_config->predict_from_tree_function(config->predict_from_tree_config, &predict_from_tree_args, model->trees[i], instance);
+        votes[prediction]++;
     }
 
     int class_id = 0;
@@ -23,19 +26,4 @@ int predict_from_random_forest_majority(PredictFromTreeArgs *predict_from_tree_a
 
     free(votes);
     return class_id;
-}
-
-/**
- * @brief predict_from_model predicts the class of an instance based on a model
- * @param args the arguments for the predict_from_model function
- * @return the class id
- */
-int predict_from_model(PredictFromModelArgs *args){
-    switch(args->mode) {
-        case PREDICT_FROM_MODEL_MODE_RANDOM_FOREST_MAJORITY:
-            return predict_from_random_forest_majority(args->predict_from_tree_args, args->model, args->instance);
-        default:
-            printf("Error: unknown predict model mode\n");
-        return -1;
-    }
 }
