@@ -9,8 +9,6 @@
 
 
 int main(int argc, char** argv){
-    create_ui();
-    return 0;
     srand(time(NULL));
 
     char path[128] = "datasets/MNIST_train.txt";
