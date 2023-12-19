@@ -1,44 +1,20 @@
-#ifndef SPLIT_H
-#define SPLIT_H
+#pragma once
 
 #include "Dataset.h"
+#include "dynamic/Impurity.h"
+#include "dynamic/Threshold.h"
 
 typedef struct sSplit{
-    int featureID;
+    int feature_id;
     float threshold;
 } Split;
 
 /**
- * @brief Split_subproblem splits a subproblem into 2 subproblems based on a feature and a threshold
+ * @brief split_subproblem splits a subproblem into 2 subproblems based on a feature and a threshold
  * @param sp the subproblem to split
- * @param featureID the feature to split on
+ * @param feature_id the feature to split on
  * @param threshold the threshold to split on
  * @param spl the left subproblem
  * @param spr the right subproblem
  */
-void Split_subproblem(Subproblem *sp, int featureID, float threshold, Subproblem *spl, Subproblem *spr);
-
-/**
- * @brief Split_gini computes the gini impurity of a subproblem given a feature and a threshold
- * @param sp the subproblem
- * @param featureID the feature to split on
- * @param threshold the threshold to split on
-*/
-float Split_gini(Subproblem *sp, int featureID, float threshold);
-
-/**
- * @brief Split_threshold computes the threshold to use for a given feature based on (minFeatureValue + maxFeatureValue) / 2
- * @param sp the subproblem
- * @param featureID the feature to split on
- * @return the threshold
- */
-float Split_threshold(Subproblem *sp, int featureID);
-
-/**
- * @brief Split_compute computes the best split for a subproblem
- * @param sp the subproblem
- * @return the split
- */
-Split Split_compute(Subproblem *sp);
-
-#endif //SPLIT_H
+void split_subproblem(const Subproblem *sp, int feature_id, float threshold, Subproblem *spl, Subproblem *spr);

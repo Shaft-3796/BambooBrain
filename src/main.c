@@ -1,45 +1,55 @@
 #include <time.h>
 
-#include "Test.h"
 #include "Dataset.h"
-#include "DecisionTree.h"
+#include "DecisionTreeTools.h"
+
 #include "Split.h"
-#include "RandomForest.h"
+#include "ModelTools.h"
+#include "dynamic/CreateModel.h"
+
 
 int main(int argc, char** argv){
     srand(time(NULL));
 
-    char path[128] = "PENDIGITS_train.txt";
-    char test_path[128] = "PENDIGITS_test.txt";
+    char path[128] = "datasets/MNIST_train.txt";
+    char test_path[128] = "datasets/MNIST_test.txt";
 
-    Dataset *trainData = Dataset_readFromFile(path);
-    Dataset *testData = Dataset_readFromFile(test_path);
+    Dataset *trainData = parse_dataset_from_file(path);
+    Dataset *testData = parse_dataset_from_file(test_path);
 
-    Subproblem *sp = Dataset_getSubproblem(trainData);
+    Subproblem *sp = create_subproblem_from_dataset(trainData);
     printf("------ Train data ------\n");
-    Subproblem_print(sp);
+    print_subproblem(sp);
 
-    Subproblem *sp_test = Dataset_getSubproblem(testData);
+    Subproblem *sp_test = create_subproblem_from_dataset(testData);
     printf("------ Test data ------\n");
-    Subproblem_print(sp_test);
+    print_subproblem(sp_test);
 
     printf("[---- Single Decision Tree ----]\n");
-    DecisionTreeNode *tree = DecisionTree_create(sp, 0, 30, 1);
-    printf("Génération d'un arbre de %d nœuds\n", Decision_nodeCount(tree));
+    ThresholdArgs ta = {THRESHOLD_MODE_MID_MIN_MAX};
+    ImpurityArgs ia = {IMPURITY_MODE_GINI};
+    ComputeSplitArgs csa = {COMPUTE_SPLIT_MODE_PUREST_THRESHOLD, .threshold_args=&ta, .impurity_args=&ia};
+    CreateTreeArgs cta = {CREATE_TREE_MODE_PRUNNING_THRESHOLD, .sp=sp, .compute_split_args=&csa, .max_depth=15, .prunning_threshold=0.9};
+    DecisionTreeNode *tree = create_tree(&cta);
+    printf("Génération d'un arbre de %d nœuds\n", count_decision_tree_nodes(tree));
 
-    printf("Train: %f, Test: %f\n", DecisionTree_evaluate(tree, trainData), DecisionTree_evaluate(tree, testData));
+    PredictFromTreeArgs pfta = {PREDICT_FROM_TREE_MODE_THRESHOLD};
+    printf("Train: %f, Test: %f\n", evaluate_decision_tree(&pfta, tree, trainData), evaluate_decision_tree(&pfta, tree, testData));
 
-    DecisionTree_destroy(tree);
+    destroy_decision_tree(tree);
 
     printf("[---- Random Forest ----]\n");
-    RandomForest *rf = RandomForest_create(10, trainData, 30, 0.5, 1);
-    printf("Génération d'une forêt de %d arbres de %d nœuds\n", rf->treeCount, RandomForest_nodeCount(rf));
+    BaggingArgs ba = {BAGGING_MODE_PROPORTION, .proportion=0.5};
+    CreateModelArgs mca = {MODEL_MODE_RANDOM_FOREST, .data=trainData, .bagging_args=&ba, .create_tree_args=&cta, .tree_count=10};
+    Model *model = create_model(&mca);
+    printf("Génération d'une forêt de %d arbres de %d nœuds\n", model->tree_count, count_model_nodes(model));
 
-    printf("Train: %f, Test: %f\n", RandomForest_evaluate(rf, trainData), RandomForest_evaluate(rf, testData));
+    PredictFromModelArgs pfma = {PREDICT_FROM_MODEL_MODE_RANDOM_FOREST_MAJORITY, .predict_from_tree_args=&pfta};
+    printf("Train: %f, Test: %f\n", evaluate_model(&pfma, model, trainData), evaluate_model(&pfma, model, testData));
 
-    Subproblem_destroy(sp);
-    Subproblem_destroy(sp_test);
-    RandomForest_destroy(rf);
-    Dataset_destroy(trainData);
-    Dataset_destroy(testData);
+    destroy_subproblem(sp);
+    destroy_subproblem(sp_test);
+    destroy_model(model);
+    destroy_dataset(trainData);
+    destroy_dataset(testData);
 }
