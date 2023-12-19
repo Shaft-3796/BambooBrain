@@ -239,10 +239,10 @@ int create_ui(DecisionTreeNode *tree) {
                             reset_drawing(texture);
                             break;
                         case SDL_SCANCODE_KP_ENTER:
-                            save_texture("test.txt", texture, window, tree);
+                            save_texture("../datasets/test.txt", texture, window, tree);
                             break;
                         case SDL_SCANCODE_T:
-                            load_texture("test.txt", texture, window);
+                            load_texture("../datasets/test.txt", texture, window);
                         default:
                             break;
                     }
