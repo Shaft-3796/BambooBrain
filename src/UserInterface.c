@@ -79,7 +79,7 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
  * \param args the arguments for the predict_from_tree function
  */
 void predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
-    char tmp_path[128] = "../datasets/PENDIGITS_train.txt";
+    char tmp_path[128] = "../datasets/test.txt";
     Dataset *tmpData = parse_dataset_from_file(tmp_path);
 
     Subproblem *sp_tmp = create_subproblem_from_dataset(tmpData);
@@ -276,7 +276,7 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
                         int x = evt.motion.x*TEXTURE_WIDTH/w;
                         int y = evt.motion.y*TEXTURE_HEIGHT/h;
 
-                        draw_circle(texture, x, y, 2.3);
+                        draw_circle(texture, x, y, 1.4);
                     }
 
                 default:

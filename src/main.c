@@ -5,6 +5,7 @@
 
 #include "Split.h"
 #include "ModelTools.h"
+#include "UserInterface.h"
 #include "dynamic/CreateModel.h"
 
 
@@ -36,6 +37,7 @@ int main(int argc, char** argv){
     PredictFromTreeArgs pfta = {PREDICT_FROM_TREE_MODE_THRESHOLD};
     printf("Train: %f, Test: %f\n", evaluate_decision_tree(&pfta, tree, trainData), evaluate_decision_tree(&pfta, tree, testData));
 
+
     destroy_decision_tree(tree);
 
     printf("[---- Random Forest ----]\n");
@@ -46,6 +48,8 @@ int main(int argc, char** argv){
 
     PredictFromModelArgs pfma = {PREDICT_FROM_MODEL_MODE_RANDOM_FOREST_MAJORITY, .predict_from_tree_args=&pfta};
     printf("Train: %f, Test: %f\n", evaluate_model(&pfma, model, trainData), evaluate_model(&pfma, model, testData));
+
+    // create_ui(tree, &pfta);
 
     destroy_subproblem(sp);
     destroy_subproblem(sp_test);
