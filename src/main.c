@@ -11,8 +11,8 @@
 int main(int argc, char** argv){
     srand(time(NULL));
 
-    char path[128] = "datasets/MNIST_train.txt";
-    char test_path[128] = "datasets/MNIST_test.txt";
+    char path[128] = "datasets/PENDIGITS_train.txt";
+    char test_path[128] = "datasets/PENDIGITS_test.txt";
 
     Dataset *trainData = parse_dataset_from_file(path);
     Dataset *testData = parse_dataset_from_file(test_path);

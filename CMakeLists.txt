@@ -11,18 +11,9 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2IMAGE REQUIRED SDL2_image)
 
-file(GLOB SOURCES "src/*.c" "src/*.h")
+file(GLOB SOURCES "src/*.c" "src/*.h" "src/dynamic/*.c" "src/dynamic/*.h")
 
 # EXECUTABLE
 add_executable(bamboo ${SOURCES})
-target_link_libraries(bamboo PRIVATE m ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
-file(COPY datasets DESTINATION ${CMAKE_BINARY_DIR})
-
-# PLAYGROUND
-add_executable(test1 playground/test1.c ${SOURCES})
-target_link_libraries(test1 ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
-file(COPY datasets DESTINATION ${CMAKE_BINARY_DIR})
-
-add_executable(test2 playground/test2.c ${SOURCES})
-target_link_libraries(test2 ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
+target_link_libraries(bamboo PRIVATE m ${SDL2_LIBRARIES}  ${SDL2IMAGE_LIBRARIES})
 file(COPY datasets DESTINATION ${CMAKE_BINARY_DIR})
