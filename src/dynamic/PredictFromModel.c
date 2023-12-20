@@ -27,3 +27,18 @@ float predict_from_random_forest_majority(const PredictFromModelConfig *config, 
     free(votes);
     return class_id;
 }
+
+/**
+ * @brief predict_from_tree predicts the class of an instance based on a single tree (PREDICT_FROM_MODEL_MODE_SINGLE_TREE)
+ * @param config the configuration for the predict_from_model function
+ * - predict_from_tree_config: the configuration for the predict_from_tree function
+ * @param args mdoe specific arguments for the predict_from_model function
+ * No arguments are expected.
+ * @param model the model
+ * @param instance the instance
+ * @return the class id
+ */
+float predict_from_model_single_tree(const PredictFromModelConfig *config, const PredictFromModelArgs *args, const Model *model, const Instance *instance) {
+    const PredictFromTreeArgs predict_from_tree_args = {};
+    return config->predict_from_tree_config->predict_from_tree_function(config->predict_from_tree_config, &predict_from_tree_args, model->tree, instance);
+}
