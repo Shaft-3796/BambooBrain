@@ -31,3 +31,25 @@ Model *create_random_forest(const CreateModelConfig *config, const CreateModelAr
 
     return rf;
 }
+
+/**
+ * @brief create_tree creates a simple decision tree model (MODEL_MODE_TREE)
+ * @param config the configuration for the create_model function
+ * - create_tree_config: the configuration for the create_tree function
+ * @param args mode specific arguments for the create_model function
+ * No arguments are expected.
+ * @param data the dataset
+ * @return a pointer to the model
+ */
+Model *create_tree(const CreateModelConfig *config, const CreateModelArgs *args, const Dataset *data) {
+    Model *rf = (Model*) calloc(1, sizeof(Model));
+
+    rf->class_count = data->class_count;
+
+    const CreateTreeArgs create_tree_args = {.current_depth=0};
+    Subproblem *subproblem = create_subproblem_from_dataset(data);
+    rf->tree = config->create_tree_config->create_tree_function(config->create_tree_config, &create_tree_args, subproblem);
+
+    destroy_subproblem(subproblem);
+    return rf;
+}

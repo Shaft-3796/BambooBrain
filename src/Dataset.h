@@ -90,5 +90,5 @@ void destroy_subproblem(Subproblem *sp);
  * @param data the dataset
  * @return a pointer to the subproblem
  */
-Subproblem *create_subproblem_from_dataset(Dataset *data);
+Subproblem *create_subproblem_from_dataset(const Dataset *data);
 

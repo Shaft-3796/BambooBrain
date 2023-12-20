@@ -44,6 +44,7 @@ DecisionTreeNode * read_node(FILE *storage){
  */
 void write_model(FILE *storage, const Model *model){
     fwrite(&model->mode, sizeof(ModelMode), 1, storage);
+    write_node(storage, model->tree);
     fwrite(&model->class_count, sizeof(int), 1, storage);
     fwrite(&model->tree_count, sizeof(int), 1, storage);
     for(int i=0; i<model->tree_count; i++) {
@@ -59,6 +60,7 @@ void write_model(FILE *storage, const Model *model){
 Model * read_model(FILE *storage) {
     Model *model = (Model*) calloc(sizeof(Model), 1);
     fread(&model->mode, sizeof(ModelMode), 1, storage);
+    model->tree = read_node(storage);
     fread(&model->class_count, sizeof(int), 1, storage);
     fread(&model->tree_count, sizeof(int), 1, storage);
     model->trees = (DecisionTreeNode**) calloc(sizeof(DecisionTreeNode*), model->tree_count);

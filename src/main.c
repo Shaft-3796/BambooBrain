@@ -11,6 +11,7 @@
 int main(int argc, char** argv){
     /* Algorithm configuration */
     // Creation
+
     CreateModelConfig create_model_config = {
         .mode = MODEL_MODE_RANDOM_FOREST,
         .create_model_function = create_random_forest,
@@ -24,11 +25,18 @@ int main(int argc, char** argv){
     };
     create_model_config.bagging_config = &bagging_config;
 
+    /*
+    CreateModelConfig create_model_config = {
+        .mode = MODEL_MODE_TREE,
+        .create_model_function = create_tree,
+    };*/
+
+
     CreateTreeConfig create_tree_config = {
         .mode = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
         .create_tree_function = create_decision_tree_from_prunning_treshold,
         .max_depth = 30,
-        .prunning_threshold = 0.5,
+        .prunning_threshold = 1,
     };
     create_model_config.create_tree_config = &create_tree_config;
 

@@ -7,6 +7,7 @@
  * MODEL_MODE_RANDOM_FOREST: random forest
  */
 typedef enum Model {
+    MODEL_MODE_TREE,
     MODEL_MODE_RANDOM_FOREST,
 } ModelMode;
 
@@ -15,6 +16,7 @@ typedef enum Model {
  * Common:
  * @param class_count the number of classes in the model
  * Specific:
+ * @param tree used for MODEL_MODE_TREE to store the tree
  * @param trees used for MODEL_MODE_RANDOM_FOREST to store the trees
  * @param tree_count used for MODEL_MODE_RANDOM_FOREST to store the number of trees
  */
@@ -23,6 +25,8 @@ typedef struct sModel{
     /* Common arguments */
     int class_count;
     /* Specific arguments */
+    DecisionTreeNode* tree;
     DecisionTreeNode** trees;
     int tree_count;
+
 } Model;

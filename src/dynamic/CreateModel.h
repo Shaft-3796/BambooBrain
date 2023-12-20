@@ -9,7 +9,6 @@
  * @brief CreateModelArgs the arguments for the create_model function
  */
 typedef struct CreateModelArgs {
-
 } CreateModelArgs;
 
 /**
@@ -44,3 +43,14 @@ typedef struct CreateModelConfig {
  * @return a pointer to the model
  */
 Model *create_random_forest(const CreateModelConfig *config, const CreateModelArgs *args, const Dataset *data);
+
+/**
+ * @brief create_tree creates a simple decision tree model (MODEL_MODE_TREE)
+ * @param config the configuration for the create_model function
+ * - create_tree_config: the configuration for the create_tree function
+ * @param args mode specific arguments for the create_model function
+ * No arguments are expected.
+ * @param data the dataset
+ * @return a pointer to the model
+ */
+Model *create_tree(const CreateModelConfig *config, const CreateModelArgs *args, const Dataset *data);
