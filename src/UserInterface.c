@@ -52,7 +52,7 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
     pixels = tmp;
 
     // Check if the pixel isn't outside the texture
-    if (x < 0 || x > TEXTURE_WIDTH || y < 0|| y > TEXTURE_HEIGHT) return;
+    if (x < 0 || x >= TEXTURE_WIDTH || y < 0|| y >= TEXTURE_HEIGHT) return;
 
     if (add) {
         // Get the old colour of the pixel
@@ -229,9 +229,9 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
     if (texture == NULL) {
         printf("Erreur while creating texture - %s\n", SDL_GetError());
     }
-
-    int quit = 0;
-    while (!quit) {
+    
+    
+    while (1) {
         SDL_Event evt;
         SDL_Scancode scanCode;
 
@@ -240,7 +240,7 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
             switch (evt.type)
             {
                 case SDL_QUIT:
-                    quit = 1;
+                    goto Quit;
                     break;
 
                 case SDL_KEYDOWN:
@@ -250,7 +250,7 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
                     switch (scanCode)
                     {
                         case SDL_SCANCODE_ESCAPE:
-                            quit = 1;
+                            goto Quit;
                         break;
                         case SDL_SCANCODE_SPACE:
                             reset_drawing(texture);
@@ -284,7 +284,7 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
             }
         }
         SDL_RenderCopy(renderer, texture, NULL, NULL);
-        SDL_RenderPresent(renderer);
+        if (renderer) SDL_RenderPresent(renderer);
     }
 
 
