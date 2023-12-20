@@ -5,6 +5,7 @@
 
 #include "Split.h"
 #include "ModelTools.h"
+#include "UserInterface.h"
 #include "dynamic/CreateModel.h"
 
 
@@ -73,9 +74,8 @@ int main(int argc, char** argv){
 
     srand(time(NULL));
 
-    char path[128] = "datasets/MNIST_train.txt";
-    char test_path[128] = "datasets/MNIST_test.txt";
-    char model_path[128] = "/home/x/Mount/XHome/Projects/Esiea/BambooBrain/datasets/model.bb";
+    char path[128] = "datasets/PENDIGITS_train.txt";
+    char test_path[128] = "datasets/PENDIGITS_test.txt";
 
     printf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
@@ -87,7 +87,16 @@ int main(int argc, char** argv){
     float train_accuracy = evaluate_model(&predict_from_model_config, model, trainData);
     float test_accuracy = evaluate_model(&predict_from_model_config, model, testData);
 
+    create_ui(model);
+
+
     printf("Train accuracy: %.2f%%\n", train_accuracy*100);
     printf("Test accuracy: %.2f%%\n", test_accuracy*100);
 
+    PredictFromModelArgs pfma = {PREDICT_FROM_MODEL_MODE_RANDOM_FOREST_MAJORITY, .predict_from_tree_args=&pfta};
+    printf("Train: %f, Test: %f\n", evaluate_model(&pfma, model, trainData), evaluate_model(&pfma, model, testData));
+
+    destroy_model(model);
+    destroy_dataset(trainData);
+    destroy_dataset(testData);
 }
