@@ -1,7 +1,7 @@
 #include "ComputeSplit.h"
 
 /**
- * @brief compute_purest_threshold_split compute the best split for a subproblem based on the purest threshold (COMPUTE_SPLIT_MODE_PUREST_THRESHOLD)
+ * @brief compute_purest_feature_split compute the best split for a subproblem based on the purest feature (COMPUTE_SPLIT_MODE_PUREST_FEATURE)
  * @param config the configuration for the split_compute function
  * - threshold_config: the configuration for the threshold function
  * - impurity_config: the configuration for the impurity function
@@ -10,7 +10,7 @@
  * @param sp the subproblem
  * @return the split
  */
-Split compute_purest_threshold_split(const ComputeSplitConfig *config, const ComputeSplitArgs *args, const Subproblem *sp) {
+Split compute_purest_feature_split(const ComputeSplitConfig *config, const ComputeSplitArgs *args, const Subproblem *sp) {
     Split split = {0, 0.0};
     float impurity = 1.0;
 

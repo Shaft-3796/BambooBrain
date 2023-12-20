@@ -16,13 +16,13 @@ int main(int argc, char** argv){
     CreateModelConfig create_model_config = {
         .mode = MODEL_MODE_RANDOM_FOREST,
         .create_model_function = create_random_forest,
-        .tree_count = 2,
+        .tree_count = 1,
     };
 
     BaggingConfig bagging_config = {
         .mode = BAGGING_MODE_PROPORTIONAL,
         .bagging_function = bagging_from_proportion,
-        .proportion = 0.5,
+        .proportion = 0.95,
     };
     create_model_config.bagging_config = &bagging_config;
 
@@ -42,8 +42,8 @@ int main(int argc, char** argv){
     create_model_config.create_tree_config = &create_tree_config;
 
     ComputeSplitConfig compute_split_config = {
-        .mode = COMPUTE_SPLIT_MODE_PUREST_THRESHOLD,
-        .compute_split_function = compute_purest_threshold_split,
+        .mode = COMPUTE_SPLIT_MODE_PUREST_FEATURE,
+        .compute_split_function = compute_purest_feature_split,
     };
     create_tree_config.compute_split_config = &compute_split_config;
 
@@ -74,16 +74,24 @@ int main(int argc, char** argv){
 
     srand(time(NULL));
 
-    char path[128] = "datasets/MNIST_train.txt";
-    char test_path[128] = "datasets/MNIST_test.txt";
+    char path[128] = "datasets/PENDIGITS_train.txt";
+    char test_path[128] = "datasets/PENDIGITS_test.txt";
     char model_path[128] = "../datasets/model.bb";
 
     printf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
     Dataset *testData = parse_dataset_from_file(test_path);
 
-    printf("Loading model...\n");
+    destroy_dataset(trainData);
+    destroy_dataset(testData);
+
     Model *model = load_model(&create_model_config, path, model_path);
+
+    destroy_model(model);
+
+    return 0;
+    printf("Loading model...\n");
+
 
     float train_accuracy = evaluate_model(&predict_from_model_config, model, trainData);
     float test_accuracy = evaluate_model(&predict_from_model_config, model, testData);
@@ -96,6 +104,5 @@ int main(int argc, char** argv){
 
 
     destroy_model(model);
-    destroy_dataset(trainData);
-    destroy_dataset(testData);
+
 }

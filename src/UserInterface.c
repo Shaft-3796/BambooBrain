@@ -85,7 +85,7 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
  * \param config the arguments for the predict_from_model function
  * \return the digit predicted
  */
-int predict_drawing(Model *model, PredictFromTreeConfig *config) {
+int predict_drawing(Model *model, PredictFromModelConfig *config) {
     char tmp_path[128] = "../datasets/test.txt";
     Dataset *tmpData = parse_dataset_from_file(tmp_path);
 
@@ -107,7 +107,7 @@ int predict_drawing(Model *model, PredictFromTreeConfig *config) {
  * \param window the SDL window
  * \return int the digit predicted
  */
-int save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model, PredictFromTreeConfig *config) {
+int save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model, PredictFromModelConfig *config) {
     void* tmp;
     Uint32 *pixels;
     int pitch;
@@ -209,7 +209,7 @@ void reset_drawing(SDL_Texture *texture) {
  * @brief Create a window to allow user interact with
  * @return Exit code
  */
-int create_ui(Model *model, PredictFromTreeConfig *config) {
+int create_ui(Model *model, PredictFromModelConfig *config) {
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
     SDL_Texture *texture = NULL;
