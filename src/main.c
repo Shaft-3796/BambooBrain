@@ -16,13 +16,13 @@ int main(int argc, char** argv){
     CreateModelConfig create_model_config = {
         .mode = MODEL_MODE_RANDOM_FOREST,
         .create_model_function = create_random_forest,
-        .tree_count = 1,
+        .tree_count = 20,
     };
 
     BaggingConfig bagging_config = {
         .mode = BAGGING_MODE_PROPORTIONAL,
         .bagging_function = bagging_from_proportion,
-        .proportion = 0.95,
+        .proportion = 0.5,
     };
     create_model_config.bagging_config = &bagging_config;
 
@@ -74,35 +74,29 @@ int main(int argc, char** argv){
 
     srand(time(NULL));
 
-    char path[128] = "datasets/PENDIGITS_train.txt";
-    char test_path[128] = "datasets/PENDIGITS_test.txt";
+    char path[128] = "datasets/BIN_train.txt";
+    char test_path[128] = "datasets/BIN_test.txt";
     char model_path[128] = "../datasets/model.bb";
 
     printf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
     Dataset *testData = parse_dataset_from_file(test_path);
 
-    destroy_dataset(trainData);
-    destroy_dataset(testData);
 
-    Model *model = load_model(&create_model_config, path, model_path);
-
-    destroy_model(model);
-
-    return 0;
     printf("Loading model...\n");
+    Model *model = load_model(&create_model_config, path, model_path);
 
 
     float train_accuracy = evaluate_model(&predict_from_model_config, model, trainData);
     float test_accuracy = evaluate_model(&predict_from_model_config, model, testData);
 
-    create_ui(model, &predict_from_model_config);
-
-
     printf("Train accuracy: %.2f%%\n", train_accuracy*100);
     printf("Test accuracy: %.2f%%\n", test_accuracy*100);
 
+    create_ui(model, &predict_from_model_config);
+
 
     destroy_model(model);
-
+    destroy_dataset(trainData);
+    destroy_dataset(testData);
 }

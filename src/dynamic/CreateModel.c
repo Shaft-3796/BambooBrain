@@ -25,6 +25,8 @@ Model *create_random_forest(const CreateModelConfig *config, const CreateModelAr
 
     for(int i=0; i<config->tree_count; ++i) {
         const CreateTreeArgs create_tree_args = {.current_depth=0};
+        printf("Creating tree %d/%d\n", i+1, config->tree_count);
+        fflush(stdout);
         rf->trees[i] = config->create_tree_config->create_tree_function(config->create_tree_config, &create_tree_args, subproblems[i]);
         destroy_subproblem(subproblems[i]);
     }

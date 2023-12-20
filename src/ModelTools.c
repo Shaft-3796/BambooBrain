@@ -98,6 +98,10 @@ void destroy_model(Model *model) {
             free(model->trees);
             free(model);
             break;
+        case MODEL_MODE_TREE:
+            destroy_decision_tree(model->tree);
+            free(model);
+            break;
     }
 }
 
