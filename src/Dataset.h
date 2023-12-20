@@ -1,5 +1,4 @@
-#ifndef DATASET_H
-#define DATASET_H
+#pragma once
 
 #include <SDL.h>
 #include <stdlib.h>
@@ -7,83 +6,89 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#define DATASETS_PATH "../datasets/"
-
 
 typedef struct sInstance{
     int* values;
-    int classID;
+    int class_id;
 } Instance;
 
 typedef struct sDataset{
     Instance *instances;
-    int instanceCount;
-    int featureCount;
-    int classCount;
+    int instance_count;
+    int feature_count;
+    int class_count;
 }   Dataset;
 
 typedef struct sSubproblemClass{
-    int instanceCount;
+    int instance_count;
     Instance **instances;
 } SubproblemClass;
 
 typedef struct sSubproblem{
     Instance **instances;
-    int instanceCount;
+    int instance_count;
     int capacity;
-    int featureCount;
-    int classCount;
+    int feature_count;
+    int class_count;
     SubproblemClass *classes;
+    int majority_class_id;
+    int majority_class_instance_count;
 } Subproblem;
 
 
+/* --- Dataset parsing --- */
 /**
- * @brief Dataset_readFromFile reads a dataset from a file
- * @param filename the name of the file to read
+ * @brief parse_dataset_from_file parses a dataset from a file
+ * @param path the path to the file
  * @return a pointer to the dataset
  */
-Dataset* Dataset_readFromFile(char* filename);
+Dataset* parse_dataset_from_file(const char* path);
 
 /**
- * @brief Dataset_destroy frees the memory allocated for the dataset
+ * @brief destroy_dataset frees the memory allocated for the dataset
  * @param data the dataset to free
  */
-void Dataset_destroy(Dataset *data);
+void destroy_dataset(Dataset *data);
+
+
+/* --- Subproblem --- */
+/**
+ * @brief create_subproblem creates a subproblem from properties
+ * @param max_capacity the maximum capacity of the subproblem
+ * @param feature_count the number of features
+ * @param class_count the number of classes
+ */
+Subproblem *create_subproblem(int max_capacity, int feature_count, int class_count);
 
 /**
- * @brief Dataset_getSubproblem creates a subproblem from a dataset
+ * @brief insert_subproblem_instance inserts an instance into a subproblem
+ * @param sp the subproblem
+ * @param instance the instance to insert
+ */
+void insert_subproblem_instance(Subproblem *sp, Instance *instance);
+
+/**
+ * @brief free_subproblem_excess_memory frees the memory allocated for the subproblem that is not used, RAM optimization
+ * @param sp the subproblem
+ */
+void free_subproblem_excess_memory(Subproblem *sp);
+
+/**
+ * @brief print_subproblem prints the subproblem
+ * @param sp the subproblem to print
+ */
+void print_subproblem(Subproblem *sp);
+
+/**
+ * @brief destroy_subproblem frees the memory allocated for the subproblem
+ * @param sp the subproblem to free
+ */
+void destroy_subproblem(Subproblem *sp);
+
+/**
+ * @brief create_subproblem_from_dataset creates a subproblem from a dataset
  * @param data the dataset
  * @return a pointer to the subproblem
  */
-Subproblem *Dataset_getSubproblem(Dataset *data);
+Subproblem *create_subproblem_from_dataset(const Dataset *data);
 
-/**
- * @brief Subproblem_create creates a subproblem from the given parameters
- * @param maximumCapacity the maximum capacity of the subproblem
- * @param featureCount the number of features
- * @param classCount the number of classes
- * @return a pointer to the subproblem
- */
-Subproblem *Subproblem_create(int maximumCapacity, int featureCount, int classCount);
-
-/**
- * @brief Subproblem_destroy frees the memory allocated for the subproblem
- * @param subproblem the subproblem to free
- */
-void Subproblem_destroy(Subproblem *subproblem);
-
-/**
- * @brief Subproblem_insert inserts an instance into the subproblem
- * @param subproblem the subproblem
- * @param instance the instance to insert
- */
-void Subproblem_insert(Subproblem *subproblem, Instance *instance);
-
-/**
- * @brief Subproblem_print prints the subproblem
- * @param subproblem the subproblem to print
- */
-void Subproblem_print(Subproblem *subproblem);
-
-
-#endif //DATASET_H
