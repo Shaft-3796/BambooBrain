@@ -42,3 +42,15 @@ typedef struct PredictFromModelConfig {
  * @return the class id
  */
 float predict_from_random_forest_majority(const PredictFromModelConfig *config, const PredictFromModelArgs *args, const Model *model, const Instance *instance);
+
+/**
+ * @brief predict_from_model predicts the class of an instance based on a model
+ * @param config the configuration for the predict_from_model function
+ * @param args mdoe specific arguments for the predict_from_model function
+ * @param model the model
+ * @param instance the instance
+ * @return the class id
+ */
+inline float predict_from_model(const PredictFromModelConfig *config, const PredictFromModelArgs *args, const Model *model, const Instance *instance) {
+    return config->predict_from_model_function(config, args, model, instance);
+}

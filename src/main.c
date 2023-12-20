@@ -14,7 +14,7 @@ int main(int argc, char** argv){
     CreateModelConfig create_model_config = {
         .mode = MODEL_MODE_RANDOM_FOREST,
         .create_model_function = create_random_forest,
-        .tree_count = 10,
+        .tree_count = 2,
     };
 
     BaggingConfig bagging_config = {
@@ -28,7 +28,7 @@ int main(int argc, char** argv){
         .mode = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
         .create_tree_function = create_decision_tree_from_prunning_treshold,
         .max_depth = 30,
-        .prunning_threshold = 1,
+        .prunning_threshold = 0.5,
     };
     create_model_config.create_tree_config = &create_tree_config;
 
@@ -65,41 +65,21 @@ int main(int argc, char** argv){
 
     srand(time(NULL));
 
-    char path[128] = "datasets/PENDIGITS_train.txt";
-    char test_path[128] = "datasets/PENDIGITS_test.txt";
+    char path[128] = "datasets/MNIST_train.txt";
+    char test_path[128] = "datasets/MNIST_test.txt";
+    char model_path[128] = "/home/x/Mount/XHome/Projects/Esiea/BambooBrain/datasets/model.bb";
 
+    printf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
     Dataset *testData = parse_dataset_from_file(test_path);
 
-    Subproblem *sp = create_subproblem_from_dataset(trainData);
-    printf("------ Train data ------\n");
-    print_subproblem(sp);
+    printf("Loading model...\n");
+    Model *model = load_model(&create_model_config, path, model_path);
 
-    Subproblem *sp_test = create_subproblem_from_dataset(testData);
-    printf("------ Test data ------\n");
-    print_subproblem(sp_test);
+    float train_accuracy = evaluate_model(&predict_from_model_config, model, trainData);
+    float test_accuracy = evaluate_model(&predict_from_model_config, model, testData);
 
-    printf("[---- Single Decision Tree ----]\n");
-    DecisionTreeNode *tree = create_tree_config.create_tree_function(&create_tree_config, &(CreateTreeArgs){.current_depth=0}, sp);
-    printf("Génération d'un arbre de %d nœuds\n", count_decision_tree_nodes(tree));
+    printf("Train accuracy: %.2f%%\n", train_accuracy*100);
+    printf("Test accuracy: %.2f%%\n", test_accuracy*100);
 
-    const float train_accuracy = evaluate_decision_tree(&predict_from_tree_config, tree, trainData);
-    const float test_accuracy = evaluate_decision_tree(&predict_from_tree_config, tree, testData);
-    printf("Train: %f, Test: %f\n", train_accuracy, test_accuracy);
-
-    destroy_decision_tree(tree);
-
-    printf("[---- Random Forest ----]\n");
-    Model *model = create_model_config.create_model_function(&create_model_config, &(CreateModelArgs){}, trainData);
-    printf("Génération d'une forêt de %d arbres de %d nœuds\n", model->tree_count, count_model_nodes(model));
-
-    const float train_accuracy_rf = evaluate_model(&predict_from_model_config, model, trainData);
-    const float test_accuracy_rf = evaluate_model(&predict_from_model_config, model, testData);
-    printf("Train: %f, Test: %f\n", train_accuracy_rf, test_accuracy_rf);
-
-    destroy_subproblem(sp);
-    destroy_subproblem(sp_test);
-    destroy_model(model);
-    destroy_dataset(trainData);
-    destroy_dataset(testData);
 }

@@ -2,7 +2,19 @@
 
 #include "Model.h"
 #include "DecisionTreeTools.h"
+#include "dynamic/CreateModel.h"
 #include "dynamic/PredictFromModel.h"
+
+
+/**
+ * @brief Load a model, create it if persistence is not enabled or if the file does not exist.
+ * Save it to the file if persistence is enabled.
+ * @param config the configuration for the create_model function
+ * @param train_data_path the path to the training data
+ * @param model_path the path to enable persistence, NULL to disable persistence,
+ * if the file does not exist, the model will be created and saved to the file
+ */
+Model *load_model(CreateModelConfig *config, const char *train_data_path, const char *model_path);
 
 
 /* @brief count nodes in a model

@@ -3,6 +3,7 @@
 #include "../Model.h"
 #include "Bagging.h"
 #include "CreateTree.h"
+#include "../Storage.h"
 
 /**
  * @brief CreateModelArgs the arguments for the create_model function

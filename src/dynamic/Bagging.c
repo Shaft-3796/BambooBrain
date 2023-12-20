@@ -7,7 +7,7 @@ static int* gen_random_integers(const int from, const int to, const int count) {
 }
 
 /**
- * @brief Generate a subproblem by randomly selecting a proportion of instances (BAGGING_MODE_PROPORTIONAL)
+ * @brief Generate subproblems by randomly selecting a proportion of instances (BAGGING_MODE_PROPORTIONAL)
  * @param config the configuration for the bagging function
  * @param args mode specific arguments for the bagging function
  * No arguments are expected.

@@ -31,7 +31,7 @@ typedef struct BaggingConfig {
 } BaggingConfig;
 
 /**
- * @brief Generate a subproblem by randomly selecting a proportion of instances (BAGGING_MODE_PROPORTIONAL)
+ * @brief Generate subproblems by randomly selecting a proportion of instances (BAGGING_MODE_PROPORTIONAL)
  * @param config the configuration for the bagging function
  * - proportion: the proportion of instances to select
  * @param args mode specific arguments for the bagging function

@@ -11,6 +11,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2IMAGE REQUIRED SDL2_image)
 
+
 file(GLOB SOURCES "src/*.c" "src/*.h" "src/dynamic/*.c" "src/dynamic/*.h")
 
 # EXECUTABLE
