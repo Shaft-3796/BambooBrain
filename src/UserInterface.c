@@ -247,15 +247,15 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
         exit(EXIT_FAILURE);
     }
 
+    // Create textures to render text
     char text[12] = "0";
-
     SDL_Color red = {255, 0, 0, 255};
     SDL_Surface *text_surface = TTF_RenderText_Solid(font, text, red);
     SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
 
     int w, h;
     TTF_SizeText(font, "0", &w, &h);
-    SDL_Rect Message_rect = {10, 10, w, h};
+    SDL_Rect text_rect = {10, 10, w, h};
 
 
     while (1) {
@@ -282,14 +282,6 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
                         case SDL_SCANCODE_SPACE:
                             reset_drawing(texture);
                             break;
-                        case SDL_SCANCODE_KP_ENTER:
-                            predict = save_texture("../datasets/test.txt", texture, window, tree, args);
-                            if (predict >= 0) {
-                                text[0] = predict+'0';
-                                text_surface = TTF_RenderText_Solid(font, text, red);
-                                text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
-                            }
-                            break;
                         case SDL_SCANCODE_T:
                             load_texture("../datasets/test.txt", texture, window);
                         default:
@@ -309,6 +301,15 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
                         int y = evt.motion.y*TEXTURE_HEIGHT/h;
 
                         draw_circle(texture, x, y, 1.2);
+
+                        predict = save_texture("../datasets/test.txt", texture, window, tree, args);
+
+                        // Update text on screen
+                        if (predict >= 0) {
+                            text[0] = predict + '0';
+                            text_surface = TTF_RenderText_Solid(font, text, red);
+                            text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+                        }
                     }
 
                 default:
@@ -316,7 +317,7 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
             }
         }
         SDL_RenderCopy(renderer, texture, NULL, NULL);
-        SDL_RenderCopy(renderer, text_texture, NULL, &Message_rect);
+        SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
 
 
         if (renderer) SDL_RenderPresent(renderer);
