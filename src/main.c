@@ -13,7 +13,7 @@ int main(int argc, char** argv){
     /* Algorithm configuration */
     // Creation
 
-    CreateModelConfig create_model_config = {
+    /*CreateModelConfig create_model_config = {
         .mode = MODEL_MODE_RANDOM_FOREST,
         .create_model_function = create_random_forest,
         .tree_count = 20,
@@ -24,14 +24,13 @@ int main(int argc, char** argv){
         .bagging_function = bagging_from_proportion,
         .proportion = 0.5,
     };
-    create_model_config.bagging_config = &bagging_config;
+    create_model_config.bagging_config = &bagging_config;*/
 
-    /*
+
     CreateModelConfig create_model_config = {
         .mode = MODEL_MODE_TREE,
         .create_model_function = create_tree,
-    };*/
-
+    };
 
     CreateTreeConfig create_tree_config = {
         .mode = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
@@ -61,22 +60,24 @@ int main(int argc, char** argv){
 
     // Prediction
     PredictFromModelConfig predict_from_model_config = {
-        .mode = PREDICT_FROM_MODEL_MODE_RANDOM_FOREST_MAJORITY,
-        .predict_from_model_function = predict_from_random_forest_majority,
+        .mode = PREDICT_FROM_MODEL_MODE_SINGLE_TREE,
+        .predict_from_model_function = predict_from_model_single_tree,
     };
 
     PredictFromTreeConfig predict_from_tree_config = {
-        .mode = PREDICT_FROM_TREE_MODE_THRESHOLD,
-        .predict_from_tree_function = predict_from_tree_and_threshold,
+        .mode = PREDICT_FROM_TREE_MODE_SIGMOID_SCORE,
+        .predict_from_tree_function = predict_from_tree_and_sigmoid_score,
+
+        .sigmoid_lambda = 0.2,
     };
     predict_from_model_config.predict_from_tree_config = &predict_from_tree_config;
 
 
     srand(time(NULL));
 
-    char path[128] = "datasets/BIN_train.txt";
-    char test_path[128] = "datasets/BIN_test.txt";
-    char model_path[128] = "../datasets/model.bb";
+    char path[128] = "datasets/MNIST_train.txt";
+    char test_path[128] = "datasets/MNIST_test.txt";
+    char model_path[128] = "../datasets/dump.bb";
 
     printf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
@@ -93,7 +94,7 @@ int main(int argc, char** argv){
     printf("Train accuracy: %.2f%%\n", train_accuracy*100);
     printf("Test accuracy: %.2f%%\n", test_accuracy*100);
 
-    create_ui(model, &predict_from_model_config);
+    // create_ui(model, &predict_from_model_config);
 
 
     destroy_model(model);
