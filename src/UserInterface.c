@@ -80,12 +80,12 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
 }
 
 /**
- * \brief load saved drawing from file and predict its class from a given tree.
- * \param tree the tree
- * \param args the arguments for the predict_from_tree function
+ * \brief load saved drawing from file and predict its class from a given model.
+ * \param model the model
+ * \param config the arguments for the predict_from_model function
  * \return the digit predicted
  */
-int predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
+int predict_drawing(Model *model, PredictFromTreeConfig *config) {
     char tmp_path[128] = "../datasets/test.txt";
     Dataset *tmpData = parse_dataset_from_file(tmp_path);
 
@@ -93,7 +93,7 @@ int predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
 
     printf("------ TMP data ------\n");
     print_subproblem(sp_tmp);
-    int *pred = predict_all_from_tree(args, tree, tmpData);
+    int *pred = predict_all_from_model(config, model, tmpData);
 
     destroy_subproblem(sp_tmp);
 
@@ -107,7 +107,7 @@ int predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
  * \param window the SDL window
  * \return int the digit predicted
  */
-int save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, DecisionTreeNode *tree, PredictFromTreeArgs *args) {
+int save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model, PredictFromTreeConfig *config) {
     void* tmp;
     Uint32 *pixels;
     int pitch;
@@ -139,7 +139,7 @@ int save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window,
     fclose(out);
     SDL_UnlockTexture(texture);
     printf("File created with success!\n");
-    return predict_drawing(tree, args);
+    return predict_drawing(model, config);
 }
 
 
@@ -209,7 +209,7 @@ void reset_drawing(SDL_Texture *texture) {
  * @brief Create a window to allow user interact with
  * @return Exit code
  */
-int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
+int create_ui(Model *model, PredictFromTreeConfig *config) {
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
     SDL_Texture *texture = NULL;
@@ -306,7 +306,7 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
                         // Draw circle in additive or substractive mode depending on which mouse button is clicked
                         draw_circle(texture, x, y, 1.2, evt.button.button != SDL_BUTTON_LEFT);
 
-                        predict = save_texture("../datasets/test.txt", texture, window, tree, args);
+                        predict = save_texture("../datasets/test.txt", texture, window, model, config);
 
                         // Update text on screen
                         if (predict >= 0) {

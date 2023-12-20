@@ -21,15 +21,17 @@
 #include "DecisionTree.h"
 
 #include "dynamic/PredictFromTree.h"
+#include "Model.h"
+#include "ModelTools.h"
 #include "DecisionTreeTools.h"
 
 int init_sdl();
 
-int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args);
+int create_ui(Model *model, PredictFromTreeConfig *config);
 
-int save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, DecisionTreeNode *tree, PredictFromTreeArgs *args);
+int save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model, PredictFromTreeConfig *config);
 void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x, int y, bool add);
 void draw_circle(SDL_Texture *texture, int x, int y, float radius, bool subtract);
 void reset_drawing(SDL_Texture *texture);
 
-int predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args);
+int predict_drawing(Model *model, PredictFromTreeConfig *config);
