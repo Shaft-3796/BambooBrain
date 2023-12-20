@@ -45,9 +45,9 @@ int init_sdl() {
  * \param a the alpha component
  * \param x the x coordinate of the pixel
  * \param y the y coordinate of the pixel
- * \param add true if the new pixel should be added only if it's lighter than the old one, false if it should be just replaced
+ * \param overwrite true whether the new pixel be overwritten or added
  */
-void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x, int y, bool add) {
+void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x, int y, bool overwrite) {
     void* tmp;
     Uint32 *pixels;
     int pitch;
@@ -60,17 +60,17 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
     // Check if the pixel isn't outside the texture
     if (x < 0 || x >= TEXTURE_WIDTH || y < 0|| y >= TEXTURE_HEIGHT) return;
 
-    if (add) {
+    if (overwrite) {
+        // Replace pixel
+        pixels[y * TEXTURE_WIDTH + x] = SDL_MapRGBA(format,  r,  g,  b,  a);
+    }
+    else {
         // Get the old colour of the pixel
         Uint8 oldR, oldG, oldB, oldA;
         SDL_GetRGBA(pixels[y * TEXTURE_WIDTH + x], format, &oldR, &oldG, &oldB, &oldA);
 
         // Replace pixel if it is ligther than the old one
         pixels[y * TEXTURE_WIDTH + x] = SDL_MapRGBA(format,  max(r, oldR),  max(g, oldG),  max(b, oldB),  max(a, oldA));
-    }
-    else {
-        // Replace pixel
-        pixels[y * TEXTURE_WIDTH + x] = SDL_MapRGBA(format,  r,  g,  b,  a);
     }
 
 
@@ -94,10 +94,6 @@ int predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
     printf("------ TMP data ------\n");
     print_subproblem(sp_tmp);
     int *pred = predict_all_from_tree(args, tree, tmpData);
-
-    for (int i = 0; i < sp_tmp->instance_count; ++i) {
-        printf("%d: %d\n", i, pred[i]);
-    }
 
     destroy_subproblem(sp_tmp);
 
@@ -160,7 +156,7 @@ void load_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
         for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
             intensity = trainData->instances[0].values[j * TEXTURE_WIDTH + i];
-            draw_pixel(texture, intensity, intensity, intensity, 255, i, j, false);
+            draw_pixel(texture, intensity, intensity, intensity, 255, i, j, true);
         }
     }
     return;
@@ -174,7 +170,7 @@ void load_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
  * \param y The y coordinate
  * \param radius The radius of the circle
  */
-void draw_circle(SDL_Texture *texture, int x, int y, float radius) {
+void draw_circle(SDL_Texture *texture, int x, int y, float radius, bool subtract) {
     // Loop in each pixels in the radius
     for (int dx = -radius; dx <= radius; dx++) {
         for (int dy = -radius; dy <= radius; dy++) {
@@ -183,8 +179,14 @@ void draw_circle(SDL_Texture *texture, int x, int y, float radius) {
             // Make sure the pixel is inside the circle
             if (distance <= radius) {
                 // Get colour intensity depending on the distance
-                Uint8 intensity = 255 - (Uint8)(distance / radius * 255);
-                draw_pixel(texture, intensity, intensity, intensity, 255, x + dx, y + dy, true);
+                if (subtract) {
+                    draw_pixel(texture, 0, 0, 0, 255, x + dx, y + dy, true);
+                }
+                else {
+                    Uint8 intensity = (Uint8)(distance / radius * 255);
+                    intensity = 255 - intensity;
+                    draw_pixel(texture, intensity, intensity, intensity, 255, x + dx, y + dy, false);
+                }
             }
         }
     }
@@ -197,7 +199,7 @@ void draw_circle(SDL_Texture *texture, int x, int y, float radius) {
 void reset_drawing(SDL_Texture *texture) {
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
         for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
-            draw_pixel(texture, 0, 0, 0, 255, i, j, false);
+            draw_pixel(texture, 0, 0, 0, 255, i, j, true);
         }
     }
 }
@@ -293,14 +295,16 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
                 // Handle mouse movements
                 case SDL_MOUSEMOTION :
                     // If left click is pressed draw pixels
-                    if (evt.button.button == SDL_BUTTON_LEFT) {
+                    if (evt.button.button == SDL_BUTTON_RIGHT || evt.button.button == SDL_BUTTON_X1 ||
+                        evt.button.button == SDL_BUTTON_LEFT) {
                         int w, h;
                         SDL_GetWindowSize(window, &w, &h);
 
                         int x = evt.motion.x*TEXTURE_WIDTH/w;
                         int y = evt.motion.y*TEXTURE_HEIGHT/h;
 
-                        draw_circle(texture, x, y, 1.2);
+                        // Draw circle in additive or substractive mode depending on which mouse button is clicked
+                        draw_circle(texture, x, y, 1.2, evt.button.button != SDL_BUTTON_LEFT);
 
                         predict = save_texture("../datasets/test.txt", texture, window, tree, args);
 
