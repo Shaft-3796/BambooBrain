@@ -27,6 +27,12 @@ int init_sdl() {
         return EXIT_FAILURE;
     }
 
+    if (TTF_Init() < 0) {
+        printf("Error while initializing SDL TTF library - %s\n", SDL_GetError());
+        return EXIT_FAILURE;
+    }
+
+
     return EXIT_SUCCESS;
 }
 
@@ -77,8 +83,9 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
  * \brief load saved drawing from file and predict its class from a given tree.
  * \param tree the tree
  * \param args the arguments for the predict_from_tree function
+ * \return the digit predicted
  */
-void predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
+int predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
     char tmp_path[128] = "../datasets/test.txt";
     Dataset *tmpData = parse_dataset_from_file(tmp_path);
 
@@ -93,6 +100,8 @@ void predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
     }
 
     destroy_subproblem(sp_tmp);
+
+    return pred[0];
 }
 
 /**
@@ -100,9 +109,9 @@ void predict_drawing(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
  * \param filename the filename of the output file
  * \param texture the SDL image to export
  * \param window the SDL window
- * \return void
+ * \return int the digit predicted
  */
-void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, DecisionTreeNode *tree, PredictFromTreeArgs *args) {
+int save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, DecisionTreeNode *tree, PredictFromTreeArgs *args) {
     void* tmp;
     Uint32 *pixels;
     int pitch;
@@ -118,7 +127,7 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
     if (out == NULL) {
         fprintf(stderr, "Erreur while opening/creating %s\n", filename);
         SDL_UnlockTexture(texture);
-        return;
+        return -1;
     }
 
     // Write the first line giving size of the dataset
@@ -134,8 +143,7 @@ void save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
     fclose(out);
     SDL_UnlockTexture(texture);
     printf("File created with success!\n");
-    predict_drawing(tree, args);
-    return;
+    return predict_drawing(tree, args);
 }
 
 
@@ -204,6 +212,8 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
     SDL_Renderer *renderer = NULL;
     SDL_Texture *texture = NULL;
 
+    int predict;
+
     if (init_sdl() != EXIT_SUCCESS) return EXIT_FAILURE;
 
     Uint32 flags = SDL_WINDOW_RESIZABLE;
@@ -229,8 +239,25 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
     if (texture == NULL) {
         printf("Erreur while creating texture - %s\n", SDL_GetError());
     }
-    
-    
+
+    TTF_Font *font = TTF_OpenFont("../fonts/fast99.ttf", 80);
+
+    if (font == NULL) {
+        fprintf(stderr, "error: font not found\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char text[12] = "0";
+
+    SDL_Color red = {255, 0, 0, 255};
+    SDL_Surface *text_surface = TTF_RenderText_Solid(font, text, red);
+    SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+
+    int w, h;
+    TTF_SizeText(font, "0", &w, &h);
+    SDL_Rect Message_rect = {10, 10, w, h};
+
+
     while (1) {
         SDL_Event evt;
         SDL_Scancode scanCode;
@@ -256,7 +283,12 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
                             reset_drawing(texture);
                             break;
                         case SDL_SCANCODE_KP_ENTER:
-                            save_texture("../datasets/test.txt", texture, window, tree, args);
+                            predict = save_texture("../datasets/test.txt", texture, window, tree, args);
+                            if (predict >= 0) {
+                                text[0] = predict+'0';
+                                text_surface = TTF_RenderText_Solid(font, text, red);
+                                text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+                            }
                             break;
                         case SDL_SCANCODE_T:
                             load_texture("../datasets/test.txt", texture, window);
@@ -284,6 +316,9 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
             }
         }
         SDL_RenderCopy(renderer, texture, NULL, NULL);
+        SDL_RenderCopy(renderer, text_texture, NULL, &Message_rect);
+
+
         if (renderer) SDL_RenderPresent(renderer);
     }
 
@@ -297,6 +332,11 @@ int create_ui(DecisionTreeNode *tree, PredictFromTreeArgs *args) {
             SDL_DestroyRenderer(renderer);
     if(window != NULL)
             SDL_DestroyWindow(window);
+    if (text_surface != NULL)
+        SDL_FreeSurface(text_surface);
+    if (text_texture != NULL)
+        SDL_DestroyTexture(text_texture);
+
     SDL_Quit();
     IMG_Quit();
     return EXIT_FAILURE;
