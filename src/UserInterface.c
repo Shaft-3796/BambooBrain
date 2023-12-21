@@ -313,6 +313,9 @@ int create_ui(Config *config, Model *model) {
     TTF_SizeText(font, "0", &w, &h);
     SDL_Rect text_rect = {10, 10, w, h};
 
+    Uint32 lastTick = SDL_GetTicks();
+    int tickRate = 100;
+
 
     while (1) {
         SDL_Event evt;
@@ -360,6 +363,12 @@ int create_ui(Config *config, Model *model) {
 
                         // Draw circle in additive or substractive mode depending on which mouse button is clicked
                         draw_circle(texture, x, y, 1.2, evt.button.button != SDL_BUTTON_LEFT);
+
+                        // Stop there if we didn't reach the trickrate
+                        if (lastTick + tickRate > SDL_GetTicks()) break;
+
+                        // Update last tick
+                        lastTick = SDL_GetTicks();
 
                         predict = save_texture(config, "../datasets/test.txt", texture, window, model);
 
