@@ -90,9 +90,7 @@ int predict_drawing(Config *config, Model *model) {
 
     Subproblem *sp_tmp = create_subproblem_from_dataset(tmpData);
 
-    printf("------ TMP data ------\n");
-    print_subproblem(sp_tmp);
-    int *pred = predict_all_from_model(config, model, tmpData);
+    int *pred = predict_all_from_tree(config, model->trees[0], tmpData);
 
     destroy_subproblem(sp_tmp);
 
@@ -105,9 +103,9 @@ int predict_drawing(Config *config, Model *model) {
  * @param filename the filename of the output file
  * @param texture the SDL image to export
  * @param window the SDL window
- * @return int the digit predicted
+ * @return void
  */
-int save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model) {
+void save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model) {
     void* tmp;
     Uint32 *pixels;
     int pitch;
@@ -125,7 +123,7 @@ int save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL
     if (out == NULL) {
         fprintf(stderr, "Erreur while opening/creating %s\n", filename);
         SDL_UnlockTexture(texture);
-        return -1;
+        return ;
     }
 
     // Write the first line giving size of the dataset
@@ -144,7 +142,7 @@ int save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL
     fclose(out);
     SDL_UnlockTexture(texture);
     printf("File created with success!\n");
-    return predict_drawing(config, model);
+    return;
 }
 
 /**
@@ -352,7 +350,7 @@ int create_ui(Config *config, Model *model) {
 
                 // Handle mouse movements
                 case SDL_MOUSEMOTION :
-                    // If left click is pressed draw pixels
+                    // If click is pressed draw pixels
                     if (evt.button.button == SDL_BUTTON_RIGHT || evt.button.button == SDL_BUTTON_X1 ||
                         evt.button.button == SDL_BUTTON_LEFT) {
                         int w, h;
@@ -370,7 +368,9 @@ int create_ui(Config *config, Model *model) {
                         // Update last tick
                         lastTick = SDL_GetTicks();
 
-                        predict = save_texture(config, "../datasets/test.txt", texture, window, model);
+                        // Save texture and calculate prediction
+                        save_texture(config, "../datasets/test.txt", texture, window, model);
+                        predict = predict_drawing(config, model);
 
                         // Update text on screen
                         if (predict >= 0) {

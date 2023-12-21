@@ -48,9 +48,9 @@ void load_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
  * @param filename the filename of the output file
  * @param texture the SDL image to export
  * @param window the SDL window
- * @return int the digit predicted
+ * @return void
  */
-int save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model);
+void save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model);
 
 /**
  * @brief Draw a pixel on a texture given colour and coordinates
