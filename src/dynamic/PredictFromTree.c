@@ -22,8 +22,7 @@ int predict_from_tree_and_threshold(const Config *config, const DecisionTreeNode
 
 
 struct Scores {
-    float **scores;  // [class][indexes]
-    int *indexes;  // [class
+    float *scores;  // [class_id]
 };
 
 /**
@@ -60,7 +59,7 @@ static int count_classes_in_tree(const DecisionTreeNode *tree) {
  */
 static void fill_scores(const DecisionTreeNode *tree, struct Scores *scores, const Instance *instance, const float lambda, float score) {
     if(tree->class_id != -1) {
-        scores->scores[tree->class_id][scores->indexes[tree->class_id]++] = score;
+        scores->scores[tree->class_id] += score;
         return;
     }
 
@@ -81,16 +80,11 @@ static void fill_scores(const DecisionTreeNode *tree, struct Scores *scores, con
  * @return the class id
  */
 int predict_from_tree_and_sigmoid_score(const Config *config, const DecisionTreeNode *tree, const Instance *instance) {
-    const int node_count = count_decision_tree_nodes(tree);
     const int class_count = count_classes_in_tree(tree)+1;
 
     struct Scores scores = {
-        .scores = calloc(class_count, sizeof(float*)),
-        .indexes = calloc(class_count, sizeof(int))
+        .scores = calloc(class_count, sizeof(float)),
     };
-    for(int i = 0; i < class_count; i++) {
-        scores.scores[i] = calloc(node_count, sizeof(float));  // Max possible size
-    }
 
     fill_scores(tree, &scores, instance, config->sigmoid_lambda, 1.0);
 
@@ -98,19 +92,12 @@ int predict_from_tree_and_sigmoid_score(const Config *config, const DecisionTree
     float max_score = -1.0;
 
     for(int i = 0; i < class_count; i++) {
-        for(int j = 0; j < scores.indexes[i]; j++) {
-            if(max_class == -1 || scores.scores[i][j] > max_score) {
-                max_score = scores.scores[i][j];
-                max_class = i;
-            }
+        if(scores.scores[i] > max_score) {
+            max_score = scores.scores[i];
+            max_class = i;
         }
     }
 
-    free(scores.indexes);
-    for(int i = 0; i < class_count; i++) {
-        free(scores.scores[i]);
-    }
     free(scores.scores);
-
     return max_class;
 }
