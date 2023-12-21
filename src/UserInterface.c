@@ -4,6 +4,9 @@
 int max(int a, int b) {
     return a > b ? a : b;
 }
+int min(int a, int b) {
+    return a < b ? a : b;
+}
 
 /**
  * @brief Initialize "SDL", "SDL image" and "SDL TTF" libraries
@@ -115,6 +118,8 @@ int save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL
     SDL_LockTexture(texture, NULL, &tmp, &pitch);
     pixels = tmp;
 
+    const int correction = center_texture(pixels, format);
+
 
     FILE *out = fopen(filename, "w");
     if (out == NULL) {
@@ -127,7 +132,10 @@ int save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL
     fprintf(out, "1 1 %d\n0	", TEXTURE_WIDTH*TEXTURE_HEIGHT);
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
         for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
-            Uint32 pixel = pixels[i * TEXTURE_WIDTH + j];
+            // Add the horizontal correction
+            const int newj = max(0, min(TEXTURE_HEIGHT, j-correction));
+
+            Uint32 pixel = pixels[i * TEXTURE_WIDTH + newj];
             SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
             fprintf(out, "%d ", r ? 255 : 0); // Write each feature
         }
@@ -139,9 +147,55 @@ int save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL
     return predict_drawing(model, config);
 }
 
+/**
+ * @brief Center the texture to make it fitting more with dataset
+ * @param pixels the list of pixels
+ * @param format the SDL format
+ * @return int the horizontal correction factor (between -TEXTURE_WIDTH and TEXTURE_WIDTH)
+ */
+int center_texture(const Uint32 *pixels, const SDL_PixelFormat *format) {
+    Uint8 r, g, b, a;
+    int borderL, borderR;
+    bool found = false;
+
+    // Get the left border
+    for (int i = 0; i < TEXTURE_HEIGHT && !found; ++i) {
+        for (int j = 0; j < TEXTURE_WIDTH && !found; ++j) {
+            Uint32 pixel = pixels[j * TEXTURE_WIDTH + i];
+            SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
+            if (r) {
+                borderL = i;
+                found = true;
+            }
+        }
+    }
+
+    found = false;
+
+    // Get the right border
+    for (int i = TEXTURE_HEIGHT; i > 0 && !found; --i) {
+        for (int j = 0; j < TEXTURE_WIDTH && !found; ++j) {
+            Uint32 pixel = pixels[j * TEXTURE_WIDTH + i];
+            SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
+            if (r) {
+                borderR = i;
+                found = true;
+            }
+        }
+    }
+
+
+    // Calculate the correction factor
+    float texture_mid = TEXTURE_WIDTH/2;
+    float drawing_mid = (borderL + borderR)/2;
+    int correction = texture_mid - drawing_mid;
+
+    return correction;
+}
+
 
 /**
- * @brief Load a dataset and display it on the texture
+ * @brief Load a dataset and display a random instance on the texture
  * @param filename the filename of the output file
  * @param texture the SDL image to export
  * @param window the SDL window
@@ -150,9 +204,10 @@ int save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL
 void load_texture(const char* filename, SDL_Texture* texture, SDL_Window *window) {
     Dataset *trainData = parse_dataset_from_file(filename);
     Uint8 intensity;
+    int r = rand() % trainData->instance_count;
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
         for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
-            intensity = trainData->instances[0].values[j * TEXTURE_WIDTH + i];
+            intensity = trainData->instances[r].values[j * TEXTURE_WIDTH + i];
             draw_pixel(texture, intensity, intensity, intensity, 255, i, j, true);
         }
     }
@@ -285,6 +340,7 @@ int create_ui(Config *config, Model *model) {
                             break;
                         case SDL_SCANCODE_T:
                             load_texture("../datasets/test.txt", texture, window);
+                            break;
                         default:
                             break;
                     }
