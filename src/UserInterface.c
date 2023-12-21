@@ -141,7 +141,6 @@ void save_texture(Config *config, const char* filename, SDL_Texture* texture, SD
 
     fclose(out);
     SDL_UnlockTexture(texture);
-    printf("File created with success!\n");
     return;
 }
 
