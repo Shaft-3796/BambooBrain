@@ -109,6 +109,10 @@ typedef struct sConfig {
     /* BaggingConfig */
     float bagging_proportion;  // Proportion of instances for each subproblem, for BAGGING_MODE_PROPORTIONAL
 
+    /* UserInterfaceConfig */
+    float pencil_radius; // Size of pencil to draw
+    float tickrate; // Predicting frequency while drawing (in milliseconds)
+
     /* Additional arguments YOU DO NOT NEED TO CONFIGURE IT */
     Predictions *predictions;
 

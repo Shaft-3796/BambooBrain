@@ -398,7 +398,6 @@ int create_ui(Config *config, Model *model) {
 
     // Save current tick
     Uint32 lastTick = SDL_GetTicks();
-    int tickRate = 100;
 
 
     while (1) {
@@ -446,10 +445,10 @@ int create_ui(Config *config, Model *model) {
                         int y = evt.motion.y*TEXTURE_HEIGHT/h;
 
                         // Draw circle in additive or substractive mode depending on which mouse button is clicked
-                        draw_circle(texture, x, y, 1.2, evt.button.button != SDL_BUTTON_LEFT);
+                        draw_circle(texture, x, y, config->pencil_radius, evt.button.button != SDL_BUTTON_LEFT);
 
                         // Stop there if we didn't reach the trickrate
-                        if (lastTick + tickRate > SDL_GetTicks()) break;
+                        if (lastTick + config->tickrate > SDL_GetTicks()) break;
 
                         // Update last tick
                         lastTick = SDL_GetTicks();

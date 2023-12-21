@@ -32,6 +32,11 @@ int main(int argc, char** argv){
 
         .bagging_proportion = 0.75,
 
+        .predictions=predictions,
+
+        .pencil_radius = 1.2,
+        .tickrate = 100,
+
         predictions, NULL, NULL, NULL, NULL, NULL, NULL, NULL
     };
     apply_config(&config);
