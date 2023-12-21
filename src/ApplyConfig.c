@@ -86,5 +86,35 @@ void apply_config(Config *config) {
             printf("Error: unknown predict from tree mode\n");
             exit(1);
     }
+}
 
+/**
+ * @brief Add a preprocessing step to the configuration
+ * @param config the configuration
+ * @param step the preprocessing step
+ * @param merge_mode the merge mode
+ */
+void add_pp_step(Config *config, const PreProcessingStep step, const PreProcessingMergeMode merge_mode) {
+    if (config->pre_processing_steps == NULL) {
+        config->pre_processing_steps = (PreProcessingStep *) calloc(1, sizeof(PreProcessingStep));
+        config->pre_processing_functions = (PreProcessingFunction **) calloc(1, sizeof(PreProcessingFunction*));
+        config->pre_processing_merge_modes = (PreProcessingMergeMode *) calloc(1, sizeof(PreProcessingMergeMode));
+    } else {
+        config->pre_processing_steps = (PreProcessingStep *) realloc(config->pre_processing_steps, (config->pre_processing_step_count + 1) * sizeof(PreProcessingStep));
+        config->pre_processing_functions = (PreProcessingFunction **) realloc(config->pre_processing_functions, (config->pre_processing_step_count + 1) * sizeof(PreProcessingFunction*));
+        config->pre_processing_merge_modes = (PreProcessingMergeMode *) realloc(config->pre_processing_merge_modes, (config->pre_processing_step_count + 1) * sizeof(PreProcessingMergeMode));
+    }
+    config->pre_processing_step_count++;
+
+    switch (step) {
+        case PP_STEP_BLACK_AND_WHITE:
+            config->pre_processing_functions[config->pre_processing_step_count-1] = instance_to_black_and_white;
+            break;
+        default:
+            printf("Error: unknown preprocessing step\n");
+            exit(1);
+    }
+
+    config->pre_processing_steps[config->pre_processing_step_count-1] = step;
+    config->pre_processing_merge_modes[config->pre_processing_step_count-1] = merge_mode;
 }

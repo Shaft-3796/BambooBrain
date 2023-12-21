@@ -62,6 +62,27 @@ typedef enum BaggingMode {
     BAGGING_MODE_PROPORTIONAL,
 } BaggingMode;
 
+/**
+ * @brief PreProcessingStep steps of the preprocessing
+ * PP_STEP_BLACK_AND_WHITE: convert the image to black and white
+ */
+typedef enum PreProcessingStep {
+    PP_STEP_BLACK_AND_WHITE,
+} PreProcessingStep;
+
+/**
+ * @brief PreProcessingMergeMode how new features will be merged with the original instance
+ * PP_MERGE_MODE_REPLACE: replace the original features with the new ones
+ * PP_MERGE_MODE_ADD_NOW: add the new features to the original ones directly
+ * PP_MERGE_MODE_ADD_LATER: add the new features to the original ones when the preprocessing is done
+ */
+typedef enum PreProcessingMergeMode {
+    PP_MERGE_MODE_REPLACE,
+    PP_MERGE_MODE_ADD_NOW,
+    PP_MERGE_MODE_ADD_LATER,
+} PreProcessingMergeMode;
+
+typedef void (PreProcessingFunction)(const struct sConfig *config, const int *features, int feature_count, int **new_features, int *new_feature_count);
 
 /**
  * @brief The configuration for the BambouBrain Algorithm
@@ -109,10 +130,12 @@ typedef struct sConfig {
     /* BaggingConfig */
     float bagging_proportion;  // Proportion of instances for each subproblem, for BAGGING_MODE_PROPORTIONAL
 
+    /* PreProcessingConfig */
+
     /* Additional arguments YOU DO NOT NEED TO CONFIGURE IT */
     Predictions *predictions;
 
-    /* Function Pointers AUTO GENERATED */
+    /* Function Pointers & other AUTO GENERATED */
     Model* (*create_model)(const struct sConfig *config, const Dataset *data);
     DecisionTreeNode* (*create_tree)(const struct sConfig *config, const Subproblem *sp);
     Split (*compute_split)(const struct sConfig *config, const Subproblem *sp);
@@ -121,4 +144,8 @@ typedef struct sConfig {
     Subproblem **(*apply_bagging)(const struct sConfig *config, const Dataset *data, int count);
     int (*predict_from_tree)(const struct sConfig *config, const DecisionTreeNode *tree, const Instance *instance);
     int (*predict_from_model)(const struct sConfig *config, const Model *model, const Instance *instance);
+    int pre_processing_step_count;
+    PreProcessingStep *pre_processing_steps;
+    PreProcessingFunction **pre_processing_functions;
+    PreProcessingMergeMode *pre_processing_merge_modes;
 } Config;
