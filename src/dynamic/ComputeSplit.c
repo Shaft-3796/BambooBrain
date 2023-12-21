@@ -15,18 +15,20 @@ Split compute_purest_feature_split(const ComputeSplitConfig *config, const Compu
     float impurity = 1.0;
 
     for(int feature_id=0; feature_id < sp->feature_count; feature_id++) {
-
         // Compute the threshold for the feature
         ThresholdArgs threshold_args = {};
-        const float _threshold = config->threshold_config->threshold_function(config->threshold_config, &threshold_args, sp, feature_id);
+        float *thresholds = config->threshold_config->threshold_function(config->threshold_config, &threshold_args, sp, feature_id);
 
-        ImpurityArgs impurity_args = {.feature_id=feature_id, .threshold=_threshold};
-        const float _impurity = config->impurity_config->impurity_function(config->impurity_config, &impurity_args, sp);
+        for(int threshold_id=0; thresholds[threshold_id] != -1.0; threshold_id++) {
+            ImpurityArgs impurity_args = {.feature_id=feature_id, .threshold=thresholds[threshold_id]};
+            const float _impurity = config->impurity_config->impurity_function(config->impurity_config, &impurity_args, sp);
 
-        if(_impurity <= impurity) {
-            split.feature_id = feature_id; split.threshold = _threshold;
-            impurity = _impurity;
+            if(_impurity <= impurity) {
+                split.feature_id = feature_id; split.threshold = thresholds[threshold_id];
+                impurity = _impurity;
+            }
         }
+        free(thresholds);
     }
 
     return split;

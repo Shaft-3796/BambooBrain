@@ -3,7 +3,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 
-PATH = "datasets/PENDIGITS_test.txt"
+PATH = "datasets/FASHION_test.txt"
 
 
 class Instance:
@@ -69,4 +69,4 @@ class Dataset:
 
 
 ds = Dataset.from_file(PATH)
-ds.plot(2000, 2032)
+ds.plot(0, 32)

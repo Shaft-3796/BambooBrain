@@ -13,6 +13,7 @@ int main(int argc, char** argv){
     /* Algorithm configuration */
     // Creation
 
+    /*
     CreateModelConfig create_model_config = {
         .mode = MODEL_MODE_RANDOM_FOREST,
         .create_model_function = create_random_forest,
@@ -24,13 +25,13 @@ int main(int argc, char** argv){
         .bagging_function = bagging_from_proportion,
         .proportion = 0.5,
     };
-    create_model_config.bagging_config = &bagging_config;
+    create_model_config.bagging_config = &bagging_config;*/
 
-    /*
+
     CreateModelConfig create_model_config = {
         .mode = MODEL_MODE_TREE,
         .create_model_function = create_tree,
-    };*/
+    };
 
 
     CreateTreeConfig create_tree_config = {
@@ -48,8 +49,10 @@ int main(int argc, char** argv){
     create_tree_config.compute_split_config = &compute_split_config;
 
     ThresholdConfig threshold_config = {
-        .mode = THRESHOLD_MODE_MID_MIN_MAX,
-        .threshold_function = get_subproblem_threshold_min_max,
+        .mode = THRESHOLD_MODE_ALL_VALUES,
+        .threshold_function = get_subproblem_threshold_all_values,
+
+        .threshold_step = 10,
     };
     compute_split_config.threshold_config = &threshold_config;
 
@@ -61,8 +64,8 @@ int main(int argc, char** argv){
 
     // Prediction
     PredictFromModelConfig predict_from_model_config = {
-        .mode = PREDICT_FROM_MODEL_MODE_RANDOM_FOREST_MAJORITY,
-        .predict_from_model_function = predict_from_random_forest_majority,
+        .mode = PREDICT_FROM_MODEL_MODE_SINGLE_TREE,
+        .predict_from_model_function = predict_from_model_single_tree,
     };
 
     PredictFromTreeConfig predict_from_tree_config = {
@@ -74,9 +77,9 @@ int main(int argc, char** argv){
 
     srand(time(NULL));
 
-    char path[128] = "datasets/BIN_train.txt";
-    char test_path[128] = "datasets/BIN_test.txt";
-    char model_path[128] = "../datasets/model.bb";
+    char path[128] = "datasets/PENDIGITS_train.txt";
+    char test_path[128] = "datasets/PENDIGITS_test.txt";
+    char model_path[128] = "../datasets/b.bb";
 
     printf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
@@ -92,8 +95,9 @@ int main(int argc, char** argv){
 
     printf("Train accuracy: %.2f%%\n", train_accuracy*100);
     printf("Test accuracy: %.2f%%\n", test_accuracy*100);
+    printf("Nodes: %d\n", count_model_nodes(model));
 
-    create_ui(model, &predict_from_model_config);
+    // create_ui(model, &predict_from_model_config);
 
 
     destroy_model(model);

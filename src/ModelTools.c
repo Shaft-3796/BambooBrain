@@ -47,8 +47,11 @@ int count_model_nodes(const Model* model){
                 node_count += count_decision_tree_nodes(model->trees[i]);
             }
             break;
+        case MODEL_MODE_TREE:
+            node_count += count_decision_tree_nodes(model->tree);
+            break;
     }
-    return 0;
+    return node_count;
 }
 
 /**
@@ -62,6 +65,7 @@ int* predict_all_from_model(PredictFromModelConfig *predict_from_model_config, M
     int *predictions = (int*) calloc(data->instance_count, sizeof(int));
 
     for(int i=0; i<data->instance_count; ++i) {
+        if(i%1000 == 0) {printf("Predicted %d/%d instances\n", i, data->instance_count); fflush(stdout);}
         const PredictFromModelArgs predict_from_model_args = {};
         predictions[i] = predict_from_model_config->predict_from_model_function(predict_from_model_config, &predict_from_model_args, model, &data->instances[i]);
     }
