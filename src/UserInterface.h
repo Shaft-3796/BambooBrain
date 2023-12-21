@@ -63,7 +63,7 @@ void save_texture(Config *config, const char* filename, SDL_Texture* texture, SD
  * @param y the y coordinate of the pixel
  * @param overwrite true whether the new pixel be overwritten or added
  */
-void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x, int y, bool add);
+void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x, int y, bool overwrite);
 
 /**
  * @brief Draw a plein circle on a given position colorized gradiently from white to black
@@ -95,3 +95,51 @@ int predict_drawing(Config *config, Model *model);
  * @return int the horizontal correction factor (between -TEXTURE_WIDTH and TEXTURE_WIDTH)
  */
 int center_texture(const Uint32 *pixels, const SDL_PixelFormat *format);
+
+/**
+ * \brief Update each statictic text with its prediction percentage
+ * \param config The config
+ * \param renderer The SDL renderer
+ * \param font The text font
+ * \param surface The text surface
+ * \param texture The text texture
+ */
+void update_statistic_text(Config* config, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture);
+
+/**
+ * @brief Update each statictic text with its prediction percentage
+ * @param config The config
+ * @param renderer The SDL renderer
+ * @param font The text font
+ * @param surface The text surface
+ * @param texture The text texture
+ */
+void update_statistic_text(Config* config, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture);
+
+/**
+ * @brief Update main prediction test
+ * @param config The config
+ * @param renderer The SDL renderer
+ * @param font the text font
+ * @param surface The text surface
+ * @param texture The text texture
+ */
+void update_prediction_text(Config *config, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture);
+
+/**
+ * @brief Render each statistic text
+ * @param config The config
+ * @param window The SDL window
+ * @param renderer The SDL renderer
+ * @param statistics_font The text font
+ * @param statistic_textures The text surface
+ */
+void render_statistic_text(Config *config, SDL_Window* window, SDL_Renderer* renderer, TTF_Font* statistics_font, SDL_Texture** statistic_textures);
+
+/**
+ * @brief Create the SDL window
+ * @param window The SDL window
+ * @param renderer The SDL renderer
+ * @param texture The SDL main texture
+ */
+void create_SDL_window(SDL_Window** window, SDL_Renderer** renderer, SDL_Texture** texture);

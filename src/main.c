@@ -8,11 +8,14 @@
 
 
 int main(int argc, char** argv){
+
+    Predictions *predictions = (Predictions *) calloc(1, sizeof(Predictions));
+
     /* Algorithm configuration */
     Config config = {
         .model_mode = MODEL_MODE_RANDOM_FOREST,
         .create_tree = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
-        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_SIGMOID_SCORE,
+        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_THRESHOLD,
         .compute_split_mode = COMPUTE_SPLIT_MODE_PUREST_FEATURE,
         .threshold_mode = THRESHOLD_MODE_MID_MIN_MAX,
         .impurity_mode = IMPURITY_MODE_GINI,
@@ -29,7 +32,7 @@ int main(int argc, char** argv){
 
         .bagging_proportion = 0.75,
 
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+        predictions, NULL, NULL, NULL, NULL, NULL, NULL, NULL
     };
     apply_config(&config);
 

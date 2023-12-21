@@ -12,7 +12,11 @@
  * @return the class id
  */
 int predict_from_tree_and_threshold(const Config *config, const DecisionTreeNode *tree, const Instance *instance) {
-    if(tree->class_id != -1) return tree->class_id;  // Leaf node
+    if(tree->class_id != -1) {
+        Predictions *predictions = config->predictions;
+        predictions->main_prediction = tree->class_id;
+        return tree->class_id;
+    }// Leaf node
 
     if(instance->values[tree->split.feature_id] <= tree->split.threshold)
         return predict_from_tree_and_threshold(config, tree->left, instance);
@@ -104,6 +108,7 @@ int predict_from_tree_and_sigmoid_score(const Config *config, const DecisionTree
         float total_score = 0.0; for(int i=0; i<class_count; ++i) total_score += scores.scores[i];
         predictions->predictions = (float*) calloc(class_count, sizeof(float));
         for(int i=0; i<class_count; ++i) predictions->predictions[i] = scores.scores[i] / total_score;
+        predictions->main_prediction = max_class;
     }
 
     free(scores.scores);
