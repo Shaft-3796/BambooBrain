@@ -4,14 +4,13 @@
 #include "Config.h"
 #include "ApplyConfig.h"
 #include "ModelTools.h"
-#include "DecisionTreeTools.h"
 #include "UserInterface.h"
 
 
 int main(int argc, char** argv){
     /* Algorithm configuration */
     Config config = {
-        .model_mode = MODEL_MODE_TREE,
+        .model_mode = MODEL_MODE_RANDOM_FOREST,
         .create_tree = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
         .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_SIGMOID_SCORE,
         .compute_split_mode = COMPUTE_SPLIT_MODE_PUREST_FEATURE,
@@ -19,16 +18,16 @@ int main(int argc, char** argv){
         .impurity_mode = IMPURITY_MODE_GINI,
         .bagging_mode = BAGGING_MODE_PROPORTIONAL,
 
-        .tree_count = 5,
+        .tree_count = 50,
 
-        .max_tree_depth = 30,
+        .max_tree_depth = 200,
         .prunning_threshold = 1.0,
 
         .sigmoid_lambda = 0.2,
 
         .threshold_step = 1,
 
-        .bagging_proportion = 0.5,
+        .bagging_proportion = 0.75,
 
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
     };
@@ -39,7 +38,7 @@ int main(int argc, char** argv){
 
     char path[128] = "datasets/MNIST_train.txt";
     char test_path[128] = "datasets/MNIST_test.txt";
-    char model_path[128] = "../datasets/mnist_signle.bb";
+    char model_path[128] = "../datasets/mnist_forest.bb";
 
     printf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
@@ -49,6 +48,7 @@ int main(int argc, char** argv){
     printf("Loading model...\n");
     Model *model = load_model(&config, path, model_path);
 
+    //create_ui(&config, model);
 
     float train_accuracy = evaluate_model(&config, model, trainData);
     float test_accuracy = evaluate_model(&config, model, testData);
@@ -57,7 +57,7 @@ int main(int argc, char** argv){
     printf("Test accuracy: %.2f%%\n", test_accuracy*100);
     printf("Nodes: %d\n", count_model_nodes(model));
 
-    create_ui(&config, model);
+
 
 
     destroy_model(model);

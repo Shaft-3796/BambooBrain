@@ -3,6 +3,7 @@
 #include "Dataset.h"
 #include "Model.h"
 #include "Split.h"
+#include "Predictions.h"
 #include "DecisionTree.h"
 
 
@@ -104,6 +105,9 @@ typedef struct sConfig {
 
     /* BaggingConfig */
     float bagging_proportion;  // Proportion of instances for each subproblem, for BAGGING_MODE_PROPORTIONAL
+
+    /* Additional arguments YOU DO NOT NEED TO CONFIGURE IT */
+    Predictions *predictions;
 
     /* Function Pointers AUTO GENERATED */
     Model* (*create_model)(const struct sConfig *config, const Dataset *data);

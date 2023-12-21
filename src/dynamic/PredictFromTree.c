@@ -98,6 +98,14 @@ int predict_from_tree_and_sigmoid_score(const Config *config, const DecisionTree
         }
     }
 
+    if(config->predictions) {
+        Predictions *predictions = config->predictions;
+        predictions->prediction_count = class_count;
+        float total_score = 0.0; for(int i=0; i<class_count; ++i) total_score += scores.scores[i];
+        predictions->predictions = (float*) calloc(class_count, sizeof(float));
+        for(int i=0; i<class_count; ++i) predictions->predictions[i] = scores.scores[i] / total_score;
+    }
+
     free(scores.scores);
     return max_class;
 }
