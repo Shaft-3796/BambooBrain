@@ -2,6 +2,7 @@
 
 #include "DecisionTree.h"
 
+
 /**
  * @brief ModelMode the mode of the model
  * MODEL_MODE_RANDOM_FOREST: random forest

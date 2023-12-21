@@ -1,85 +1,44 @@
 #include <time.h>
 
 #include "Dataset.h"
-#include "DecisionTreeTools.h"
-
-#include "Split.h"
+#include "Config.h"
+#include "ApplyConfig.h"
 #include "ModelTools.h"
-#include "UserInterface.h"
-#include "dynamic/CreateModel.h"
+#include "DecisionTreeTools.h"
 
 
 int main(int argc, char** argv){
     /* Algorithm configuration */
-    // Creation
+    Config config = {
+        .model_mode = MODEL_MODE_TREE,
+        .create_tree = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
+        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_THRESHOLD,
+        .compute_split_mode = COMPUTE_SPLIT_MODE_PUREST_FEATURE,
+        .threshold_mode = THRESHOLD_MODE_MID_MIN_MAX,
+        .impurity_mode = IMPURITY_MODE_GINI,
+        .bagging_mode = BAGGING_MODE_PROPORTIONAL,
 
-    /*
-    CreateModelConfig create_model_config = {
-        .mode = MODEL_MODE_RANDOM_FOREST,
-        .create_model_function = create_random_forest,
-        .tree_count = 20,
+        .tree_count = 5,
+
+        .max_tree_depth = 30,
+        .prunning_threshold = 1.0,
+
+        .sigmoid_lambda = 0.2,
+
+        .threshold_step = 1,
+
+        .bagging_proportion = 0.5,
+
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
     };
-
-    BaggingConfig bagging_config = {
-        .mode = BAGGING_MODE_PROPORTIONAL,
-        .bagging_function = bagging_from_proportion,
-        .proportion = 0.5,
-    };
-    create_model_config.bagging_config = &bagging_config;*/
-
-
-    CreateModelConfig create_model_config = {
-        .mode = MODEL_MODE_TREE,
-        .create_model_function = create_tree,
-    };
-
-
-    CreateTreeConfig create_tree_config = {
-        .mode = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
-        .create_tree_function = create_decision_tree_from_prunning_treshold,
-        .max_depth = 30,
-        .prunning_threshold = 1,
-    };
-    create_model_config.create_tree_config = &create_tree_config;
-
-    ComputeSplitConfig compute_split_config = {
-        .mode = COMPUTE_SPLIT_MODE_PUREST_FEATURE,
-        .compute_split_function = compute_purest_feature_split,
-    };
-    create_tree_config.compute_split_config = &compute_split_config;
-
-    ThresholdConfig threshold_config = {
-        .mode = THRESHOLD_MODE_ALL_VALUES,
-        .threshold_function = get_subproblem_threshold_all_values,
-
-        .threshold_step = 10,
-    };
-    compute_split_config.threshold_config = &threshold_config;
-
-    ImpurityConfig impurity_config = {
-        .mode = IMPURITY_MODE_GINI,
-        .impurity_function = gini_impurity,
-    };
-    compute_split_config.impurity_config = &impurity_config;
-
-    // Prediction
-    PredictFromModelConfig predict_from_model_config = {
-        .mode = PREDICT_FROM_MODEL_MODE_SINGLE_TREE,
-        .predict_from_model_function = predict_from_model_single_tree,
-    };
-
-    PredictFromTreeConfig predict_from_tree_config = {
-        .mode = PREDICT_FROM_TREE_MODE_THRESHOLD,
-        .predict_from_tree_function = predict_from_tree_and_threshold,
-    };
-    predict_from_model_config.predict_from_tree_config = &predict_from_tree_config;
+    apply_config(&config);
 
 
     srand(time(NULL));
 
     char path[128] = "datasets/PENDIGITS_train.txt";
     char test_path[128] = "datasets/PENDIGITS_test.txt";
-    char model_path[128] = "../datasets/b.bb";
+    char model_path[128] = "../datasets/a.bb";
 
     printf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
@@ -87,11 +46,11 @@ int main(int argc, char** argv){
 
 
     printf("Loading model...\n");
-    Model *model = load_model(&create_model_config, path, model_path);
+    Model *model = load_model(&config, path, model_path);
 
 
-    float train_accuracy = evaluate_model(&predict_from_model_config, model, trainData);
-    float test_accuracy = evaluate_model(&predict_from_model_config, model, testData);
+    float train_accuracy = evaluate_model(&config, model, trainData);
+    float test_accuracy = evaluate_model(&config, model, testData);
 
     printf("Train accuracy: %.2f%%\n", train_accuracy*100);
     printf("Test accuracy: %.2f%%\n", test_accuracy*100);

@@ -14,21 +14,21 @@ int count_decision_tree_nodes(const DecisionTreeNode* node);
 
 /**
  * @brief predict_all_from_tree predicts the class of all instances in a dataset
- * @param predict_from_tree_config the configuration for the predict_from_tree function
+ * @param config the configuration for the predict_from_tree function
  * @param tree the tree
  * @param data the dataset
  * @return a list of predicted class ids
  */
-int* predict_all_from_tree(PredictFromTreeConfig *predict_from_tree_config, DecisionTreeNode *tree, Dataset *data);
+int* predict_all_from_tree(const Config *config, const DecisionTreeNode *tree, const Dataset *data);
 
 /**
  * @brief evaluate_decision_tree evaluates the accuracy of a decision tree on a dataset
- * @param predict_from_tree_config the configuration for the predict_from_tree function
+ * @param config the configuration for the predict_from_tree function
  * @param tree the tree
  * @param data the dataset
  * @return the accuracy between 0 and 1
  */
-float evaluate_decision_tree(PredictFromTreeConfig *predict_from_tree_config, DecisionTreeNode *tree, Dataset *data);
+float evaluate_decision_tree(const Config *config, const DecisionTreeNode *tree, const Dataset *data);
 
 /**
  * @brief destroy_decision_tree destroys a decision tree

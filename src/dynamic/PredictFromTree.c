@@ -7,19 +7,17 @@
 /**
  * @brief predict_from_tree_and_threshold predicts the class of an instance based on a threshold (PREDICT_FROM_TREE_MODE_THRESHOLD)
  * @param config the configuration for the predict_from_tree function
- * @param args mode specific arguments for the predict_from_tree function
- * No arguments are expected.
  * @param tree the tree
  * @param instance the instance
  * @return the class id
  */
-int predict_from_tree_and_threshold(const PredictFromTreeConfig *config, const PredictFromTreeArgs *args, const DecisionTreeNode *tree, const Instance *instance) {
+int predict_from_tree_and_threshold(const Config *config, const DecisionTreeNode *tree, const Instance *instance) {
     if(tree->class_id != -1) return tree->class_id;  // Leaf node
 
     if(instance->values[tree->split.feature_id] <= tree->split.threshold)
-        return predict_from_tree_and_threshold(config, args, tree->left, instance);
+        return predict_from_tree_and_threshold(config, tree->left, instance);
 
-    return predict_from_tree_and_threshold(config, args, tree->right, instance);
+    return predict_from_tree_and_threshold(config, tree->right, instance);
 }
 
 
@@ -78,14 +76,11 @@ static void fill_scores(const DecisionTreeNode *tree, struct Scores *scores, con
  * @brief predict_from_tree_and_sigmoid_scor predicts the class of an instance based on a sigmoid score (PREDICT_FROM_TREE_MODE_SIGMOID_SCORE)
  * @param config the configuration for the predict_from_tree function
  * - sigmoid_lambda the lambda parameter for the sigmoid function
- * @param args mode specific arguments for the predict_from_tree function
- * No arguments are expected.
  * @param tree the tree
  * @param instance the instance
  * @return the class id
- *
  */
-int predict_from_tree_and_sigmoid_score(const PredictFromTreeConfig *config, const PredictFromTreeArgs *args, const DecisionTreeNode *tree, const Instance *instance) {
+int predict_from_tree_and_sigmoid_score(const Config *config, const DecisionTreeNode *tree, const Instance *instance) {
     const int node_count = count_decision_tree_nodes(tree);
     const int class_count = count_classes_in_tree(tree)+1;
 

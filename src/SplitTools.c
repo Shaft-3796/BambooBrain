@@ -1,4 +1,4 @@
-#include "Split.h"
+#include "SplitTools.h"
 
 /**
  * @brief split_subproblem splits a subproblem into 2 subproblems based on a feature and a threshold
@@ -19,3 +19,4 @@ void split_subproblem(const Subproblem *sp, const int feature_id, const float th
     free_subproblem_excess_memory(spl);
     free_subproblem_excess_memory(spr);
 }
+

@@ -4,12 +4,12 @@
 /**
  * @brief Load a model, create it if persistence is not enabled or if the file does not exist.
  * Save it to the file if persistence is enabled.
- * @param config the configuration for the create_model function
+ * @param config the configuration
  * @param train_data_path the path to the training data
  * @param model_path the path to enable persistence, NULL to disable persistence,
  * if the file does not exist, the model will be created and saved to the file
  */
-Model *load_model(CreateModelConfig *config, const char *train_data_path, const char *model_path) {
+Model *load_model(const Config *config, const char *train_data_path, const char *model_path) {
     if(model_path) {
         FILE *storage = fopen(model_path, "rb");
         if(storage) {
@@ -21,7 +21,7 @@ Model *load_model(CreateModelConfig *config, const char *train_data_path, const 
     }
 
     Dataset *data = parse_dataset_from_file(train_data_path);
-    Model *model = config->create_model_function(config, &(CreateModelArgs){}, data);
+    Model *model = config->create_model(config, data);
 
     if(model_path) {
         FILE *storage = fopen(model_path, "wb");
@@ -56,31 +56,30 @@ int count_model_nodes(const Model* model){
 
 /**
  * @brief predict_all_from_model predicts the class of all instances in a dataset
- * @param predict_from_model_config the configuration for the predict_from_model function
+ * @param config the configuration
  * @param model the model
  * @param data the dataset
  * @return a list of predicted class ids
  */
-int* predict_all_from_model(PredictFromModelConfig *predict_from_model_config, Model *model, Dataset *data) {
+int* predict_all_from_model(const Config *config, const Model *model, const Dataset *data) {
     int *predictions = (int*) calloc(data->instance_count, sizeof(int));
 
     for(int i=0; i<data->instance_count; ++i) {
         if(i%1000 == 0) {printf("Predicted %d/%d instances\n", i, data->instance_count); fflush(stdout);}
-        const PredictFromModelArgs predict_from_model_args = {};
-        predictions[i] = predict_from_model_config->predict_from_model_function(predict_from_model_config, &predict_from_model_args, model, &data->instances[i]);
+        predictions[i] = config->predict_from_model(config, model, &data->instances[i]);
     }
     return predictions;
 }
 
 /**
  * @brief evaluate_model evaluates the accuracy of a model on a dataset
- * @param predict_from_model_config the configuration for the predict_from_model function
+ * @param config the configuration
  * @param model the model
  * @param data the dataset
  * @return the accuracy between 0 and 1
  */
-float evaluate_model(PredictFromModelConfig *predict_from_model_config, Model *model, Dataset *data) {
-    int *predictions = predict_all_from_model(predict_from_model_config, model, data);
+float evaluate_model(const Config *config, const Model *model, const Dataset *data) {
+    int *predictions = predict_all_from_model(config, model, data);
     int correct = 0;
     for(int i=0; i<data->instance_count; ++i) {
         if(predictions[i] == data->instances[i].class_id) correct++;

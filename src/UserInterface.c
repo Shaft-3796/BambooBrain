@@ -1,7 +1,3 @@
-//
-// Created by loe on 18/12/23.
-//
-
 #include "UserInterface.h"
 
 
@@ -81,11 +77,11 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
 
 /**
  * @brief load saved drawing from file and predict its class from a given tree.
+ * @param config the config
  * @param model the model
- * @param config the arguments for the predict_from_model function
  * @return the digit predicted
  */
-int predict_drawing(Model *model, PredictFromModelConfig *config) {
+int predict_drawing(Config *config, Model *model) {
     char tmp_path[128] = "../datasets/test.txt";
     Dataset *tmpData = parse_dataset_from_file(tmp_path);
 
@@ -102,12 +98,13 @@ int predict_drawing(Model *model, PredictFromModelConfig *config) {
 
 /**
  * @brief Save a texture into a dataset of one instance
+ * @param config the config
  * @param filename the filename of the output file
  * @param texture the SDL image to export
  * @param window the SDL window
  * @return int the digit predicted
  */
-int save_texture(const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model, PredictFromModelConfig *config) {
+int save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model) {
     void* tmp;
     Uint32 *pixels;
     int pitch;
@@ -207,9 +204,11 @@ void reset_drawing(SDL_Texture *texture) {
 
 /**
  * @brief Create a window to allow user interact with
+ * @config the config
+ * @config the model
  * @return Exit code
  */
-int create_ui(Model *model, PredictFromModelConfig *config) {
+int create_ui(Config *config, Model *model) {
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
     SDL_Texture *texture = NULL;
