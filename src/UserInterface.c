@@ -144,7 +144,7 @@ int save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL
     fclose(out);
     SDL_UnlockTexture(texture);
     printf("File created with success!\n");
-    return predict_drawing(model, config);
+    return predict_drawing(config, model);
 }
 
 /**
@@ -361,7 +361,7 @@ int create_ui(Config *config, Model *model) {
                         // Draw circle in additive or substractive mode depending on which mouse button is clicked
                         draw_circle(texture, x, y, 1.2, evt.button.button != SDL_BUTTON_LEFT);
 
-                        predict = save_texture("../datasets/test.txt", texture, window, model, config);
+                        predict = save_texture(config, "../datasets/test.txt", texture, window, model);
 
                         // Update text on screen
                         if (predict >= 0) {
