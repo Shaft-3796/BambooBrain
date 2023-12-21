@@ -92,3 +92,11 @@ void reset_drawing(SDL_Texture *texture);
  * @return the digit predicted
  */
 int predict_drawing(Model *model, PredictFromModelConfig *config);
+
+/**
+ * @brief Center the texture to make it fitting more with dataset
+ * @param pixels the list of pixels
+ * @param format the SDL format
+ * @return int the horizontal correction factor (between -TEXTURE_WIDTH and TEXTURE_WIDTH)
+ */
+int center_texture(const Uint32 *pixels, const SDL_PixelFormat *format);
