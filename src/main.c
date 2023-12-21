@@ -51,7 +51,7 @@ int main(int argc, char** argv){
     printf("Loading model...\n");
     Model *model = load_model(&config, path, model_path);
 
-    //create_ui(&config, model);
+    create_ui(&config, model);
 
     float train_accuracy = evaluate_model(&config, model, trainData);
     float test_accuracy = evaluate_model(&config, model, testData);
@@ -59,8 +59,6 @@ int main(int argc, char** argv){
     printf("Train accuracy: %.2f%%\n", train_accuracy*100);
     printf("Test accuracy: %.2f%%\n", test_accuracy*100);
     printf("Nodes: %d\n", count_model_nodes(model));
-
-
 
 
     destroy_model(model);

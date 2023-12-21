@@ -1,5 +1,7 @@
 #include "Dataset.h"
 
+#include "Progress.h"
+
 
 /* --- Dataset parsing --- */
 /**
@@ -54,10 +56,22 @@ static void parse_instance(FILE* file, Instance* instance, const int feature_cou
 static void parse_instances(FILE* file, Dataset* data) {
     data->instances = (Instance*) calloc(data->instance_count, sizeof(Instance));
 
+    Progress progress;
+
+    if(data->instance_count > 500) {
+        init_progress(&progress, data->instance_count, 0, "Reading Dataset");
+        update_progress(&progress, 0);
+    }
+
     for (int i = 0; i < data->instance_count; ++i) {
+        if(data->instance_count > 500 && i%(data->instance_count/500) == 0) {
+            update_progress(&progress, i);
+        }
         Instance *instance = &data->instances[i];
         parse_instance(file, instance, data->feature_count);
     }
+
+    if(data->instance_count > 500) finalize_progress(&progress);
 }
 
 /**

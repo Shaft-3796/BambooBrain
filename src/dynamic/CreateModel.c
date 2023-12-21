@@ -20,13 +20,18 @@ Model *create_random_forest(const Config *config, const Dataset *data) {
     // Fill the random forest with trees
     Subproblem **subproblems = config->apply_bagging(config, data, config->tree_count);
 
+    Progress progress;
+    init_progress(&progress, config->tree_count, 0, "Random Forest Creation");
+    update_progress(&progress, 0);
 
     for(int i=0; i<config->tree_count; ++i) {
-        printf("Creating tree %d/%d\n", i+1, config->tree_count);
-        fflush(stdout);
         rf->trees[i] = config->create_tree(config, subproblems[i]);
         destroy_subproblem(subproblems[i]);
+
+        update_progress(&progress, i+1);
     }
+
+    finalize_progress(&progress);
 
     return rf;
 }
@@ -44,8 +49,14 @@ Model *create_tree(const Config *config, const Dataset *data) {
 
     rf->class_count = data->class_count;
 
+    Progress progress;
+    init_progress(&progress, config->tree_count, 0, "Random Forest Creation");
+    update_progress(&progress, 0);
+
     Subproblem *subproblem = create_subproblem_from_dataset(data);
     rf->tree = config->create_tree(config, subproblem);
+
+    finalize_progress(&progress);
 
     destroy_subproblem(subproblem);
     return rf;

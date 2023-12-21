@@ -1,5 +1,7 @@
 #include "ModelTools.h"
 
+#include "Progress.h"
+
 
 /**
  * @brief Load a model, create it if persistence is not enabled or if the file does not exist.
@@ -16,7 +18,6 @@ Model *load_model(const Config *config, const char *train_data_path, const char 
             printf("Model found at %s\n", model_path);
             Model *model = read_model(storage);
             model->mode = config->model_mode;  // TODO: REMOVE THIS LINE
-            printf("Model mode is %d\n", model->mode);
             fclose(storage);
             return model;
         }
@@ -66,10 +67,21 @@ int count_model_nodes(const Model* model){
 int* predict_all_from_model(const Config *config, const Model *model, const Dataset *data) {
     int *predictions = (int*) calloc(data->instance_count, sizeof(int));
 
+    Progress progress;
+    if(data->instance_count > 500) {
+        init_progress(&progress, data->instance_count, 0, "Dataset Prediction");
+        update_progress(&progress, 0);
+    }
+
     for(int i=0; i<data->instance_count; ++i) {
-        if(i%1000 == 0) {printf("Predicted %d/%d instances\n", i, data->instance_count); fflush(stdout);}
+        if(data->instance_count > 500 && i%(data->instance_count/500) == 0) {
+            update_progress(&progress, i);
+        }
         predictions[i] = config->predict_from_model(config, model, &data->instances[i]);
     }
+
+    if(data->instance_count > 500) finalize_progress(&progress);
+
     return predictions;
 }
 

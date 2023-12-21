@@ -4,6 +4,7 @@
 #include "Bagging.h"
 #include "CreateTree.h"
 #include "../Storage.h"
+#include "../Progress.h"
 
 
 /**
