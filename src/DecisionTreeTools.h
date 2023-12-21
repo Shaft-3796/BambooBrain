@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Predictions.h"
 #include "DecisionTree.h"
 #include "dynamic/ComputeSplit.h"
 #include "dynamic/PredictFromTree.h"
@@ -17,9 +18,9 @@ int count_decision_tree_nodes(const DecisionTreeNode* node);
  * @param config the configuration for the predict_from_tree function
  * @param tree the tree
  * @param data the dataset
- * @return a list of predicted class ids
+* @return a list of predictions
  */
-int* predict_all_from_tree(const Config *config, const DecisionTreeNode *tree, const Dataset *data);
+Predictions **predict_all_from_tree(const Config *config, const DecisionTreeNode *tree, const Dataset *data);
 
 /**
  * @brief evaluate_decision_tree evaluates the accuracy of a decision tree on a dataset

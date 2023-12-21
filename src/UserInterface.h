@@ -16,6 +16,7 @@
 
 #include "dynamic/PredictFromTree.h"
 #include "Model.h"
+#include "Predictions.h"
 #include "ModelTools.h"
 #include "DecisionTreeTools.h"
 
@@ -48,9 +49,9 @@ void load_texture(const char* filename, SDL_Texture* texture, SDL_Window *window
  * @param filename the filename of the output file
  * @param texture the SDL image to export
  * @param window the SDL window
- * @return void
+ * @return instance
  */
-void save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model);
+Instance *save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model);
 
 /**
  * @brief Draw a pixel on a texture given colour and coordinates
@@ -81,14 +82,6 @@ void draw_circle(SDL_Texture *texture, int x, int y, float radius, bool subtract
 void reset_drawing(SDL_Texture *texture);
 
 /**
- * @brief load saved drawing from file and predict its class from a given tree.
- * @param config the config
- * @param model the model
- * @return the digit predicted
- */
-int predict_drawing(Config *config, Model *model);
-
-/**
  * @brief Center the texture to make it fitting more with dataset
  * @param pixels the list of pixels
  * @param format the SDL format
@@ -97,44 +90,34 @@ int predict_drawing(Config *config, Model *model);
 int center_texture(const Uint32 *pixels, const SDL_PixelFormat *format);
 
 /**
- * \brief Update each statictic text with its prediction percentage
- * \param config The config
- * \param renderer The SDL renderer
- * \param font The text font
- * \param surface The text surface
- * \param texture The text texture
- */
-void update_statistic_text(Config* config, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture);
-
-/**
  * @brief Update each statictic text with its prediction percentage
- * @param config The config
+ * @param predictions The predictions
  * @param renderer The SDL renderer
  * @param font The text font
  * @param surface The text surface
  * @param texture The text texture
  */
-void update_statistic_text(Config* config, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture);
+void update_statistic_text(const Predictions *predictions, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture);
 
 /**
  * @brief Update main prediction test
- * @param config The config
+ * @param predictions The predictions
  * @param renderer The SDL renderer
  * @param font the text font
  * @param surface The text surface
  * @param texture The text texture
  */
-void update_prediction_text(Config *config, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture);
+void update_prediction_text(const Predictions *predictions, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture);
 
 /**
  * @brief Render each statistic text
- * @param config The config
+ * @param prediction_count The number of predictions
  * @param window The SDL window
  * @param renderer The SDL renderer
  * @param statistics_font The text font
  * @param statistic_textures The text surface
  */
-void render_statistic_text(Config *config, SDL_Window* window, SDL_Renderer* renderer, TTF_Font* statistics_font, SDL_Texture** statistic_textures);
+void render_statistic_text(int prediction_count, SDL_Window* window, SDL_Renderer* renderer, TTF_Font* statistics_font, SDL_Texture** statistic_textures);
 
 /**
  * @brief Create the SDL window

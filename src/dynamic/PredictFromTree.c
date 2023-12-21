@@ -11,11 +11,11 @@
  * @param instance the instance
  * @return the class id
  */
-int predict_from_tree_and_threshold(const Config *config, const DecisionTreeNode *tree, const Instance *instance) {
+Predictions *predict_from_tree_and_threshold(const Config *config, const DecisionTreeNode *tree, const Instance *instance) {
     if(tree->class_id != -1) {
-        Predictions *predictions = config->predictions;
+        Predictions *predictions = (Predictions*) calloc(1, sizeof(Predictions));
         predictions->main_prediction = tree->class_id;
-        return tree->class_id;
+        return predictions;
     }// Leaf node
 
     if(instance->values[tree->split.feature_id] <= tree->split.threshold)
@@ -83,7 +83,7 @@ static void fill_scores(const DecisionTreeNode *tree, struct Scores *scores, con
  * @param instance the instance
  * @return the class id
  */
-int predict_from_tree_and_sigmoid_score(const Config *config, const DecisionTreeNode *tree, const Instance *instance) {
+Predictions *predict_from_tree_and_sigmoid_score(const Config *config, const DecisionTreeNode *tree, const Instance *instance) {
     const int class_count = count_classes_in_tree(tree)+1;
 
     struct Scores scores = {
@@ -102,15 +102,15 @@ int predict_from_tree_and_sigmoid_score(const Config *config, const DecisionTree
         }
     }
 
-    if(config->predictions) {
-        Predictions *predictions = config->predictions;
-        predictions->prediction_count = class_count;
-        float total_score = 0.0; for(int i=0; i<class_count; ++i) total_score += scores.scores[i];
-        predictions->predictions = (float*) calloc(class_count, sizeof(float));
-        for(int i=0; i<class_count; ++i) predictions->predictions[i] = scores.scores[i] / total_score;
-        predictions->main_prediction = max_class;
-    }
+    Predictions *predictions = (Predictions*) calloc(1, sizeof(Predictions));
+    predictions->prediction_count = class_count;
+    predictions->predictions = (float*) calloc(class_count, sizeof(float));
+
+    float total_score = 0.0; for(int i=0; i<class_count; ++i) total_score += scores.scores[i];
+    for(int i=0; i<class_count; ++i) predictions->predictions[i] = scores.scores[i] / total_score;
+
+    predictions->main_prediction = max_class;
 
     free(scores.scores);
-    return max_class;
+    return predictions;
 }

@@ -62,10 +62,10 @@ int count_model_nodes(const Model* model){
  * @param config the configuration
  * @param model the model
  * @param data the dataset
- * @return a list of predicted class ids
+ * @return a list of predictions
  */
-int* predict_all_from_model(const Config *config, const Model *model, const Dataset *data) {
-    int *predictions = (int*) calloc(data->instance_count, sizeof(int));
+Predictions **predict_all_from_model(const Config *config, const Model *model, const Dataset *data) {
+    Predictions **predictions = (Predictions**) calloc(data->instance_count, sizeof(Predictions*));
 
     Progress progress;
     if(data->instance_count > 500) {
@@ -93,12 +93,16 @@ int* predict_all_from_model(const Config *config, const Model *model, const Data
  * @return the accuracy between 0 and 1
  */
 float evaluate_model(const Config *config, const Model *model, const Dataset *data) {
-    int *predictions = predict_all_from_model(config, model, data);
+    Predictions **predictions = predict_all_from_model(config, model, data);
+
     int correct = 0;
     for(int i=0; i<data->instance_count; ++i) {
-        if(predictions[i] == data->instances[i].class_id) correct++;
+        if(predictions[i]->main_prediction == data->instances[i].class_id) correct++;
     }
+
+    for(int i=0; i<data->instance_count; ++i) destroy_predictions(predictions[i]);
     free(predictions);
+
     return (float)correct / (float)data->instance_count;
 }
 

@@ -85,33 +85,14 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
 }
 
 /**
- * @brief load saved drawing from file and predict its class from a given tree.
- * @param config the config
- * @param model the model
- * @return the digit predicted
- */
-int predict_drawing(Config *config, Model *model) {
-    char tmp_path[128] = "../datasets/test.txt";
-    Dataset *tmpData = parse_dataset_from_file(tmp_path);
-
-    Subproblem *sp_tmp = create_subproblem_from_dataset(tmpData);
-
-    int *pred = predict_all_from_tree(config, model->trees[0], tmpData);
-
-    destroy_subproblem(sp_tmp);
-
-    return pred[0];
-}
-
-/**
  * @brief Save a texture into a dataset of one instance
  * @param config the config
  * @param filename the filename of the output file
  * @param texture the SDL image to export
  * @param window the SDL window
- * @return void
+ * @return the instance
  */
-void save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model) {
+Instance *save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model) {
     void* tmp;
     Uint32 *pixels;
     int pitch;
@@ -124,30 +105,23 @@ void save_texture(Config *config, const char* filename, SDL_Texture* texture, SD
 
     const int correction = center_texture(pixels, format);
 
+    Instance *instance = (Instance*) calloc(1, sizeof(Instance));
+    instance->values = (int*) calloc(TEXTURE_WIDTH*TEXTURE_HEIGHT, sizeof(int));
+    int idx = 0;
 
-    FILE *out = fopen(filename, "w");
-    if (out == NULL) {
-        fprintf(stderr, "Erreur while opening/creating %s\n", filename);
-        SDL_UnlockTexture(texture);
-        return ;
-    }
-
-    // Write the first line giving size of the dataset
-    fprintf(out, "1 1 %d\n0	", TEXTURE_WIDTH*TEXTURE_HEIGHT);
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
-        for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
+        for (int j = 0; j < TEXTURE_HEIGHT; ++j, ++idx) {
             // Add the horizontal correction
             const int newj = max(0, min(TEXTURE_HEIGHT, j-correction));
 
             Uint32 pixel = pixels[i * TEXTURE_WIDTH + newj];
             SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
-            fprintf(out, "%d ", r ? 255 : 0); // Write each feature
+            instance->values[idx] = r ? 255 : 0;
         }
     }
 
-    fclose(out);
     SDL_UnlockTexture(texture);
-    return;
+    return instance;
 }
 
 /**
@@ -261,16 +235,16 @@ void reset_drawing(SDL_Texture *texture) {
 
 /**
  * @brief Update each statictic text with its prediction percentage
- * @param config The config
+ * @param predictions The predictions
  * @param renderer The SDL renderer
  * @param font The text font
  * @param surface The text surface
  * @param texture The text texture
  */
-void update_statistic_text(Config* config, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture) {
-    for (int i = 0; i < config->predictions->prediction_count; ++i) {
+void update_statistic_text(const Predictions *predictions, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture) {
+    for (int i = 0; i < predictions->prediction_count; ++i) {
         char text[128] = "";
-        sprintf(text, "%d: %.2f%%", i, config->predictions->predictions[i]*100);
+        sprintf(text, "%d: %.2f%%", i, predictions->predictions[i]*100);
         *surface = TTF_RenderText_Solid(font, text, grey);
         texture[i] = SDL_CreateTextureFromSurface(renderer, *surface);
     }
@@ -278,14 +252,14 @@ void update_statistic_text(Config* config, SDL_Renderer* renderer, TTF_Font* fon
 
 /**
  * @brief Update main prediction test
- * @param config The config
+ * @param predictions The predictions
  * @param renderer The SDL renderer
  * @param font the text font
  * @param surface The text surface
  * @param texture The text texture
  */
-void update_prediction_text(Config *config, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture) {
-    int prediction = config->predictions->main_prediction;
+void update_prediction_text(const Predictions *predictions, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture) {
+    int prediction = predictions->main_prediction;
     char text[12];
     if (prediction >= 0) {
         text[0] = prediction + '0';
@@ -296,21 +270,21 @@ void update_prediction_text(Config *config, SDL_Renderer* renderer, TTF_Font* fo
 
 /**
  * @brief Render each statistic text
- * @param config The config
+ * @param prediction_count The number of predictions
  * @param window The SDL window
  * @param renderer The SDL renderer
  * @param statistics_font The text font
  * @param statistic_textures The text surface
  */
-void render_statistic_text(Config *config, SDL_Window* window, SDL_Renderer* renderer, TTF_Font* statistics_font, SDL_Texture** statistic_textures) {
+void render_statistic_text(const int prediction_count, SDL_Window* window, SDL_Renderer* renderer, TTF_Font* statistics_font, SDL_Texture** statistic_textures) {
     int w, h;
     TTF_SizeText(statistics_font, "0: 00.00%", &w, &h);
 
     int winW, winH;
     SDL_GetWindowSize(window, &winW, &winH);
 
-    for (int i = 0; i < config->predictions->prediction_count; ++i) {
-        int y = (winH/2) + (i-config->predictions->prediction_count/2) * h; // Get y position of the text
+    for (int i = 0; i < prediction_count; ++i) {
+        int y = (winH/2) + (i-prediction_count/2) * h; // Get y position of the text
         SDL_Rect statistics_rect = {10, y, w, h}; // Make it responsive
         SDL_RenderCopy(renderer, statistic_textures[i], NULL, &statistics_rect);
     }
@@ -399,6 +373,8 @@ int create_ui(Config *config, Model *model) {
     // Save current tick
     Uint32 lastTick = SDL_GetTicks();
 
+    Instance *instance = NULL;
+    Predictions *predictions = NULL;
 
     while (1) {
         SDL_Event evt;
@@ -423,9 +399,6 @@ int create_ui(Config *config, Model *model) {
                         break;
                         case SDL_SCANCODE_SPACE:
                             reset_drawing(texture);
-                            break;
-                        case SDL_SCANCODE_T:
-                            load_texture("../datasets/test.txt", texture, window);
                             break;
                         default:
                             break;
@@ -454,12 +427,14 @@ int create_ui(Config *config, Model *model) {
                         lastTick = SDL_GetTicks();
 
                         // Save texture and calculate prediction
-                        save_texture(config, "../datasets/test.txt", texture, window, model);
-                        predict_drawing(config, model);
+                        instance = save_texture(config, "../datasets/test.txt", texture, window, model);
+                        predictions = config->predict_from_model(config, model, instance);
 
                         // Update texts on screen
-                        update_prediction_text(config, renderer,prediction_font, &text_surface, &text_texture);
-                        update_statistic_text(config, renderer, statistics_font, &statistic_surfaces, statistic_textures);
+                        update_prediction_text(predictions, renderer, prediction_font, &text_surface, &text_texture);
+                        update_statistic_text(predictions, renderer, statistics_font, &statistic_surfaces, statistic_textures);
+
+
                     }
 
                 default:
@@ -470,8 +445,16 @@ int create_ui(Config *config, Model *model) {
         // Render each texture
         SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
-        render_statistic_text(config, window, renderer, statistics_font, statistic_textures);
+        render_statistic_text(model->class_count, window, renderer, statistics_font, statistic_textures);
 
+
+        if(instance) {
+            free(instance->values);
+            free(instance);
+            destroy_predictions(predictions);
+            instance = NULL;
+            predictions = NULL;
+        }
 
         if (renderer) SDL_RenderPresent(renderer);
     }

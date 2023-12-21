@@ -137,7 +137,6 @@ typedef struct sConfig {
     /* PreProcessingConfig */
 
     /* Additional arguments YOU DO NOT NEED TO CONFIGURE IT */
-    Predictions *predictions;
 
     /* Function Pointers & other AUTO GENERATED */
     Model* (*create_model)(const struct sConfig *config, const Dataset *data);
@@ -146,8 +145,8 @@ typedef struct sConfig {
     float *(*get_thresholds)(const struct sConfig *config, const Subproblem *sp, int feature_id);
     float (*get_impurity)(const struct sConfig *config, const Subproblem *sp, int feature_id, int threshold);
     Subproblem **(*apply_bagging)(const struct sConfig *config, const Dataset *data, int count);
-    int (*predict_from_tree)(const struct sConfig *config, const DecisionTreeNode *tree, const Instance *instance);
-    int (*predict_from_model)(const struct sConfig *config, const Model *model, const Instance *instance);
+    Predictions *(*predict_from_tree)(const struct sConfig *config, const DecisionTreeNode *tree, const Instance *instance);
+    Predictions *(*predict_from_model)(const struct sConfig *config, const Model *model, const Instance *instance);
     int pre_processing_step_count;
     PreProcessingStep *pre_processing_steps;
     PreProcessingFunction **pre_processing_functions;

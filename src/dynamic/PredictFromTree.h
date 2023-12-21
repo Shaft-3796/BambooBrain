@@ -10,9 +10,9 @@
  * @param config the configuration for the predict_from_tree function
  * @param tree the tree
  * @param instance the instance
- * @return the class id
+ * @return the predictions with only main_prediction set
  */
-int predict_from_tree_and_threshold(const Config *config, const DecisionTreeNode *tree, const Instance *instance);
+Predictions *predict_from_tree_and_threshold(const Config *config, const DecisionTreeNode *tree, const Instance *instance);
 
 
 /**
@@ -21,6 +21,6 @@ int predict_from_tree_and_threshold(const Config *config, const DecisionTreeNode
  * - sigmoid_lambda the lambda parameter for the sigmoid function
  * @param tree the tree
  * @param instance the instance
- * @return the class id
+ * @return the predictions with all predictions set
  */
-int predict_from_tree_and_sigmoid_score(const Config *config, const DecisionTreeNode *tree, const Instance *instance);
+Predictions *predict_from_tree_and_sigmoid_score(const Config *config, const DecisionTreeNode *tree, const Instance *instance);

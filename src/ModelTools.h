@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Model.h"
+#include "Predictions.h"
 #include "DecisionTreeTools.h"
 #include "dynamic/CreateModel.h"
 #include "dynamic/PredictFromModel.h"
@@ -28,9 +29,9 @@ int count_model_nodes(const Model* model);
  * @param config the configuration
  * @param model the model
  * @param data the dataset
- * @return a list of predicted class ids
+ * @return a list of predictions
  */
-int* predict_all_from_model(const Config *config, const Model *model, const Dataset *data);
+Predictions **predict_all_from_model(const Config *config, const Model *model, const Dataset *data);
 
 /**
  * @brief evaluate_model evaluates the accuracy of a model on a dataset

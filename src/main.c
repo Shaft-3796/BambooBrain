@@ -76,26 +76,23 @@ int main(int argc, char** argv){
         .impurity_mode = IMPURITY_MODE_GINI,
         .bagging_mode = BAGGING_MODE_PROPORTIONAL,
 
-        .tree_count = 50,
+        .tree_count = 5,
 
-        .max_tree_depth = 200,
+        .max_tree_depth = 10,
         .prunning_threshold = 1.0,
 
         .sigmoid_lambda = 0.2,
 
         .threshold_step = 1,
 
-        .bagging_proportion = 0.75,
+        .bagging_proportion = 0.5,
 
         .pencil_radius = 1.2,
         .tickrate = 100,
 
-        .predictions = (Predictions *) calloc(1, sizeof(Predictions)),
-
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL,
     };
     apply_config(&config);
-
 
     srand(time(NULL));
 
@@ -107,21 +104,19 @@ int main(int argc, char** argv){
     Dataset *trainData = parse_dataset_from_file(path);
     Dataset *testData = parse_dataset_from_file(test_path);
 
-
     printf("Loading model...\n");
     Model *model = load_model(&config, path, model_path);
 
     create_ui(&config, model);
 
-    float train_accuracy = evaluate_model(&config, model, trainData);
-    float test_accuracy = evaluate_model(&config, model, testData);
+    const float train_accuracy = evaluate_model(&config, model, trainData);
+    const float test_accuracy = evaluate_model(&config, model, testData);
 
     printf("Train accuracy: %.2f%%\n", train_accuracy*100);
     printf("Test accuracy: %.2f%%\n", test_accuracy*100);
     printf("Nodes: %d\n", count_model_nodes(model));
 
-
-    destroy_model(model);
     destroy_dataset(trainData);
     destroy_dataset(testData);
+    destroy_model(model);
 }

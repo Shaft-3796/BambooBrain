@@ -16,13 +16,14 @@ int count_decision_tree_nodes(const DecisionTreeNode* node) {
  * @param config the configuration for the predict_from_tree function
  * @param tree the tree
  * @param data the dataset
- * @return a list of predicted class ids
+ * @return a list of predictions
  */
-int* predict_all_from_tree(const Config *config, const DecisionTreeNode *tree, const Dataset *data) {
-    int *predictions = (int*)calloc(data->instance_count, sizeof(int));
+Predictions **predict_all_from_tree(const Config *config, const DecisionTreeNode *tree, const Dataset *data) {
+    Predictions **predictions = (Predictions**) calloc(data->instance_count, sizeof(Predictions*));
 
     for(int i=0; i<data->instance_count; ++i) {
         predictions[i] = config->predict_from_tree(config, tree, &data->instances[i]);
+
     }
     return predictions;
 }
@@ -35,14 +36,16 @@ int* predict_all_from_tree(const Config *config, const DecisionTreeNode *tree, c
  * @return the accuracy between 0 and 1
  */
 float evaluate_decision_tree(const Config *config, const DecisionTreeNode *tree, const Dataset *data) {
-    int *predictions = predict_all_from_tree(config, tree, data);
+    Predictions **predictions = predict_all_from_tree(config, tree, data);
 
     int correct = 0;
     for(int i=0; i<data->instance_count; ++i) {
-        if(predictions[i] == data->instances[i].class_id) correct++;
+        if(predictions[i]->main_prediction == data->instances[i].class_id) correct++;
     }
 
+    for(int i=0; i<data->instance_count; ++i) destroy_predictions(predictions[i]);
     free(predictions);
+
     return (float)correct / (float)data->instance_count;
 }
 

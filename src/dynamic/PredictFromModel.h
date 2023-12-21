@@ -11,9 +11,9 @@
  * - predict_from_tree_config: the configuration for the predict_from_tree function
  * @param model the model
  * @param instance the instance
- * @return the class id
+ * @return the predictions with only main_prediction or everything depending on the configuration
  */
-int predict_from_random_forest_majority(const Config *config, const Model *model, const Instance *instance);
+Predictions *predict_from_random_forest_majority(const Config *config, const Model *model, const Instance *instance);
 
 /**
 * @brief predict_from_tree predicts the class of an instance based on a single tree (PREDICT_FROM_MODEL_MODE_SINGLE_TREE)
@@ -21,6 +21,6 @@ int predict_from_random_forest_majority(const Config *config, const Model *model
 * - predict_from_tree_config: the configuration for the predict_from_tree function
 * @param model the model
 * @param instance the instance
-* @return the class id
+* @return the predictions with only main_prediction or everything depending on the configuration
 */
-int predict_from_model_single_tree(const Config *config, const Model *model, const Instance *instance);
+Predictions *predict_from_model_single_tree(const Config *config, const Model *model, const Instance *instance);
