@@ -7,6 +7,9 @@
 #include "DecisionTree.h"
 
 
+#define SHOW_PROGRESS 1  // whether to show progress
+
+
 /**
  * @brief PredictFromTreeMode the mode of the predict_from_tree function
  * PREDICT_FROM_TREE_MODE_THRESHOLD: predict the class of an instance based on a threshold
