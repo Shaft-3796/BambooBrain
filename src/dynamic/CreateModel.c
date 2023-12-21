@@ -12,6 +12,7 @@
 Model *create_random_forest(const Config *config, const Dataset *data) {
     // Create the random forest
     Model *rf = (Model*) calloc(1, sizeof(Model));
+    rf->mode = MODEL_MODE_RANDOM_FOREST;
 
     rf->tree_count = config->tree_count; rf->class_count = data->class_count;
     rf->trees = (DecisionTreeNode**) calloc(config->tree_count, sizeof(DecisionTreeNode*));
@@ -39,6 +40,7 @@ Model *create_random_forest(const Config *config, const Dataset *data) {
  */
 Model *create_tree(const Config *config, const Dataset *data) {
     Model *rf = (Model*) calloc(1, sizeof(Model));
+    rf->mode = MODEL_MODE_TREE;
 
     rf->class_count = data->class_count;
 
