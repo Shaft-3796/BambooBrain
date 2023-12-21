@@ -66,9 +66,6 @@ void test_pre_processing() {
 int main(int argc, char** argv){
     //test_pre_processing();
 
-
-    Predictions *predictions = (Predictions *) calloc(1, sizeof(Predictions));
-
     /* Algorithm configuration */
     Config config = {
         .model_mode = MODEL_MODE_RANDOM_FOREST,
@@ -90,13 +87,12 @@ int main(int argc, char** argv){
 
         .bagging_proportion = 0.75,
 
-        .predictions=predictions,
-
         .pencil_radius = 1.2,
         .tickrate = 100,
 
-        predictions,
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL,
+        .predictions = (Predictions *) calloc(1, sizeof(Predictions)),
+
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL,
     };
     apply_config(&config);
 
