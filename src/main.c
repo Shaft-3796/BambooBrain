@@ -5,6 +5,7 @@
 #include "ApplyConfig.h"
 #include "ModelTools.h"
 #include "DecisionTreeTools.h"
+#include "UserInterface.h"
 
 
 int main(int argc, char** argv){
@@ -12,7 +13,7 @@ int main(int argc, char** argv){
     Config config = {
         .model_mode = MODEL_MODE_TREE,
         .create_tree = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
-        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_THRESHOLD,
+        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_SIGMOID_SCORE,
         .compute_split_mode = COMPUTE_SPLIT_MODE_PUREST_FEATURE,
         .threshold_mode = THRESHOLD_MODE_MID_MIN_MAX,
         .impurity_mode = IMPURITY_MODE_GINI,
@@ -36,9 +37,9 @@ int main(int argc, char** argv){
 
     srand(time(NULL));
 
-    char path[128] = "datasets/PENDIGITS_train.txt";
-    char test_path[128] = "datasets/PENDIGITS_test.txt";
-    char model_path[128] = "../datasets/a.bb";
+    char path[128] = "datasets/MNIST_train.txt";
+    char test_path[128] = "datasets/MNIST_test.txt";
+    char model_path[128] = "../datasets/mnist_signle.bb";
 
     printf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
@@ -56,7 +57,7 @@ int main(int argc, char** argv){
     printf("Test accuracy: %.2f%%\n", test_accuracy*100);
     printf("Nodes: %d\n", count_model_nodes(model));
 
-    // create_ui(model, &predict_from_model_config);
+    create_ui(&config, model);
 
 
     destroy_model(model);
