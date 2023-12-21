@@ -15,6 +15,8 @@ Model *load_model(const Config *config, const char *train_data_path, const char 
         if(storage) {
             printf("Model found at %s\n", model_path);
             Model *model = read_model(storage);
+            model->mode = config->model_mode;  // TODO: REMOVE THIS LINE
+            printf("Model mode is %d\n", model->mode);
             fclose(storage);
             return model;
         }
