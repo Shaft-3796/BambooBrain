@@ -8,6 +8,12 @@ int min(int a, int b) {
     return a < b ? a : b;
 }
 
+// Some useful colors
+SDL_Color red = {255, 0, 0, 255};
+SDL_Color blue = {0, 0, 255, 255};
+SDL_Color white = {0, 0, 255, 255};
+SDL_Color grey = {100, 100, 100, 255};
+
 /**
  * @brief Initialize "SDL", "SDL image" and "SDL TTF" libraries
  * @return Exit code
@@ -253,6 +259,100 @@ void reset_drawing(SDL_Texture *texture) {
     }
 }
 
+/**
+ * @brief Update each statictic text with its prediction percentage
+ * @param config The config
+ * @param renderer The SDL renderer
+ * @param font The text font
+ * @param surface The text surface
+ * @param texture The text texture
+ */
+void update_statistic_text(Config* config, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture) {
+    for (int i = 0; i < config->predictions->prediction_count; ++i) {
+        char text[128] = "";
+        sprintf(text, "%d: %.2f%%", i, config->predictions->predictions[i]*100);
+        *surface = TTF_RenderText_Solid(font, text, grey);
+        texture[i] = SDL_CreateTextureFromSurface(renderer, *surface);
+    }
+}
+
+/**
+ * @brief Update main prediction test
+ * @param config The config
+ * @param renderer The SDL renderer
+ * @param font the text font
+ * @param surface The text surface
+ * @param texture The text texture
+ */
+void update_prediction_text(Config *config, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture) {
+    int prediction = config->predictions->main_prediction;
+    char text[12];
+    if (prediction >= 0) {
+        text[0] = prediction + '0';
+        *surface = TTF_RenderText_Solid(font, text, red);
+        *texture = SDL_CreateTextureFromSurface(renderer, *surface);
+    }
+}
+
+/**
+ * @brief Render each statistic text
+ * @param config The config
+ * @param window The SDL window
+ * @param renderer The SDL renderer
+ * @param statistics_font The text font
+ * @param statistic_textures The text surface
+ */
+void render_statistic_text(Config *config, SDL_Window* window, SDL_Renderer* renderer, TTF_Font* statistics_font, SDL_Texture** statistic_textures) {
+    int w, h;
+    TTF_SizeText(statistics_font, "0: 00.00%", &w, &h);
+
+    int winW, winH;
+    SDL_GetWindowSize(window, &winW, &winH);
+
+    for (int i = 0; i < config->predictions->prediction_count; ++i) {
+        int y = (winH/2) + (i-config->predictions->prediction_count/2) * h; // Get y position of the text
+        SDL_Rect statistics_rect = {10, y, w, h}; // Make it responsive
+        SDL_RenderCopy(renderer, statistic_textures[i], NULL, &statistics_rect);
+    }
+}
+
+/**
+ * @brief Create the SDL window
+ * @param window The SDL window
+ * @param renderer The SDL renderer
+ * @param texture The SDL main texture
+ */
+void create_SDL_window(SDL_Window** window, SDL_Renderer** renderer, SDL_Texture** texture) {
+    if (init_sdl() != EXIT_SUCCESS) {
+        exit(EXIT_FAILURE);
+    }
+
+    Uint32 flags = SDL_WINDOW_RESIZABLE;
+    *window = SDL_CreateWindow("BambooBrain", SDL_WINDOWPOS_UNDEFINED,
+                               SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, flags);
+
+    // Create the window
+    if (!*window) {
+        fprintf(stderr, "Error while creating window - %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    // Create the renderer
+    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
+    if(NULL == *renderer)
+    {
+        fprintf(stderr,"Erreur while creating renderer %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    // Create the texture
+    *texture = SDL_CreateTexture(*renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+    if (*texture == NULL) {
+        fprintf(stderr,"Erreur while creating texture - %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
 
 /**
  * @brief Create a window to allow user interact with
@@ -265,53 +365,39 @@ int create_ui(Config *config, Model *model) {
     SDL_Renderer *renderer = NULL;
     SDL_Texture *texture = NULL;
 
-    int predict;
+    int w, h;
 
-    if (init_sdl() != EXIT_SUCCESS) return EXIT_FAILURE;
+    create_SDL_window(&window, &renderer, &texture);
 
-    Uint32 flags = SDL_WINDOW_RESIZABLE;
-    window = SDL_CreateWindow("BambooBrain", SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, flags);
 
-    // Create the window
-    if (!window) {
-        printf("Error while creating window - %s\n", SDL_GetError());
-        goto Quit;
-    }
+    // Import fonts
+    TTF_Font *prediction_font = TTF_OpenFont("../fonts/fast99.ttf", 80);
+    TTF_Font *statistics_font = TTF_OpenFont("../fonts/fast99.ttf", 45);
 
-    // Create the renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if(NULL == renderer)
-    {
-        printf("Erreur while creating renderer %s\n", SDL_GetError());
-        goto Quit;
-    }
-
-    // Create the texture
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, TEXTURE_WIDTH, TEXTURE_HEIGHT);
-    if (texture == NULL) {
-        printf("Erreur while creating texture - %s\n", SDL_GetError());
-    }
-
-    TTF_Font *font = TTF_OpenFont("../fonts/fast99.ttf", 80);
-
-    if (font == NULL) {
+    if (prediction_font == NULL || statistics_font == NULL) {
         fprintf(stderr, "error: font not found\n");
         exit(EXIT_FAILURE);
     }
 
-    // Create textures to render text
+    // Create prediction text
     char text[12] = "0";
-    SDL_Color red = {255, 0, 0, 255};
-    SDL_Surface *text_surface = TTF_RenderText_Solid(font, text, red);
+    SDL_Surface *text_surface = TTF_RenderText_Solid(prediction_font, text, red);
     SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
-
-    int w, h;
-    TTF_SizeText(font, "0", &w, &h);
+    TTF_SizeText(prediction_font, "0", &w, &h);
     SDL_Rect text_rect = {10, 10, w, h};
 
+
+    // Create statistic texts
+    SDL_Surface *statistic_surfaces = TTF_RenderText_Solid(statistics_font, "0: 00.00%", grey);
+    SDL_Texture **statistic_textures = (SDL_Texture **) calloc(model->class_count, sizeof(SDL_Texture*));
+    for (int i = 0; i < model->class_count; ++i) {
+        statistic_textures[i] = SDL_CreateTextureFromSurface(renderer, statistic_surfaces);
+    }
+    TTF_SizeText(prediction_font, "0: 00.00%", &w, &h);
+
+
+    // Save current tick
     Uint32 lastTick = SDL_GetTicks();
-    int tickRate = 100;
 
 
     while (1) {
@@ -359,39 +445,37 @@ int create_ui(Config *config, Model *model) {
                         int y = evt.motion.y*TEXTURE_HEIGHT/h;
 
                         // Draw circle in additive or substractive mode depending on which mouse button is clicked
-                        draw_circle(texture, x, y, 1.2, evt.button.button != SDL_BUTTON_LEFT);
+                        draw_circle(texture, x, y, config->pencil_radius, evt.button.button != SDL_BUTTON_LEFT);
 
                         // Stop there if we didn't reach the trickrate
-                        if (lastTick + tickRate > SDL_GetTicks()) break;
+                        if (lastTick + config->tickrate > SDL_GetTicks()) break;
 
                         // Update last tick
                         lastTick = SDL_GetTicks();
 
                         // Save texture and calculate prediction
                         save_texture(config, "../datasets/test.txt", texture, window, model);
-                        predict = predict_drawing(config, model);
+                        predict_drawing(config, model);
 
-                        // Update text on screen
-                        if (predict >= 0) {
-                            text[0] = predict + '0';
-                            text_surface = TTF_RenderText_Solid(font, text, red);
-                            text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
-                        }
+                        // Update texts on screen
+                        update_prediction_text(config, renderer,prediction_font, &text_surface, &text_texture);
+                        update_statistic_text(config, renderer, statistics_font, &statistic_surfaces, statistic_textures);
                     }
 
                 default:
                     break;
             }
         }
+
+        // Render each texture
         SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
+        render_statistic_text(config, window, renderer, statistics_font, statistic_textures);
 
 
         if (renderer) SDL_RenderPresent(renderer);
     }
 
-
-    return EXIT_SUCCESS;
 
     Quit:
     if (texture != NULL)
@@ -407,6 +491,8 @@ int create_ui(Config *config, Model *model) {
 
     SDL_Quit();
     IMG_Quit();
-    return EXIT_FAILURE;
+
+    free(statistic_textures);
+    return EXIT_SUCCESS;
 }
 
