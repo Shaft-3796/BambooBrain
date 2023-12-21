@@ -13,8 +13,6 @@
  * @param task The task
  */
 void init_progress(Progress *progress, const int max, const int current, char *task) {
-    assert(!progress->running);
-
     progress->max = max;
     progress->current = current;
     progress->task = task;
@@ -37,7 +35,7 @@ void update_progress(Progress *progress, const int current) {
     int current_diff = progress->current - progress->last_current;
     double eta = (double) (progress->max - progress->current) / current_diff * time_elapsed;
 
-    char *str_eta = (char *) calloc(128, sizeof(char));
+    char str_eta[128];
     // If eta is nan
     if(progress->last_clock == 0) {
         snprintf(str_eta, 128, "???");

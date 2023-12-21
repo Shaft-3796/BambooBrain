@@ -33,6 +33,8 @@ Model *create_random_forest(const Config *config, const Dataset *data) {
 
     finalize_progress(&progress);
 
+    free(subproblems);
+
     return rf;
 }
 
