@@ -50,23 +50,21 @@ void update_progress(Progress *progress, const int current) {
     progress->last_clock = clock_now;
     progress->last_current = progress->current;
 
-    if(SHOW_PROGRESS) {
-        printf("\r\033[0;35m\033[1m[%s]\033[0m\033[0;33m %d/%d ≈ %s\033[0m\033[0;32m〘", progress->task, progress->current, progress->max, str_eta);
+    bbprintf("\r\033[0;35m\033[1m[%s]\033[0m\033[0;33m %d/%d ≈ %s\033[0m\033[0;32m〘", progress->task, progress->current, progress->max, str_eta);
 
-        int fill_num = progress->current * 100 / progress->max;
-        int space_num = 100 - fill_num;
+    int fill_num = progress->current * 100 / progress->max;
+    int space_num = 100 - fill_num;
 
-        for (int i = 0; i < fill_num; i++) {
-            printf("▉");
-        }
-        for (int i = 0; i < space_num; i++) {
-            printf("░");
-        }
-
-        printf("〙%.f%%\033[0m", (float) progress->current / (float) progress->max * 100.0f);
-
-        fflush(stdout);
+    for (int i = 0; i < fill_num; i++) {
+        bbprintf("▉");
     }
+    for (int i = 0; i < space_num; i++) {
+        bbprintf("░");
+    }
+
+    bbprintf("〙%.f%%\033[0m", (float) progress->current / (float) progress->max * 100.0f);
+
+    fflush(stdout);
 }
 
 
@@ -83,7 +81,7 @@ void finalize_progress(Progress *progress) {
 
     progress->running = false;
 
-    if(SHOW_PROGRESS) printf("\n");
+    bbprintf("\n");
 }
 
 /**
@@ -98,7 +96,7 @@ void finalize_progress(Progress *progress) {
 ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚═════╝  ╚═════╝  ╚═════╝     ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
 */
 void print_logo(){
-    printf("\033[0;32m\033[1m");
+    bbprintf("\033[0;32m\033[1m");
     char **logo = (char**) calloc(6, sizeof(char*));
     logo[0] = "██████╗  █████╗ ███╗   ███╗██████╗  ██████╗  ██████╗     ██████╗ ██████╗  █████╗ ██╗███╗   ██╗";
     logo[1] = "██╔══██╗██╔══██╗████╗ ████║██╔══██╗██╔═══██╗██╔═══██╗    ██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║";
@@ -114,10 +112,10 @@ void print_logo(){
         while(clock() - clock_now < CLOCKS_PER_SEC/4);
         clock_now = clock();
 
-        printf("%s\n", logo[i]);
+        bbprintf("%s\n", logo[i]);
         fflush(stdout);
     }
 
-    printf("\033[0m");
+    bbprintf("\033[0m");
     free(logo);
 }

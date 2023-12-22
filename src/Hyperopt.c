@@ -75,7 +75,7 @@ void destroy_hyperopt(Hyperopt *hyperopt) {
 void run_hyperopt(const char* path, Hyperopt *hyperopt, Dataset *train_data, Dataset *opt_data) {
     assert(hyperopt->v1 && hyperopt->v2);
 
-    printf("[--- RUNNING HYPEROPT ---]\n");
+    bbprintf("[--- RUNNING HYPEROPT ---]\n");
 
     FILE *file = fopen(path, "w");
 
@@ -87,32 +87,32 @@ void run_hyperopt(const char* path, Hyperopt *hyperopt, Dataset *train_data, Dat
     for(float v1=hyperopt->v1->start; v1<hyperopt->v1->start+hyperopt->v1->step*hyperopt->v1->count; v1+=hyperopt->v1->step) {
         fprintf(file, "%f ", v1);
     }
-    fprintf(file, "\n");
+   fprintf(file, "\n");
 
     int i=0;
     for(float v1=hyperopt->v1->start; v1<hyperopt->v1->start+hyperopt->v1->step*hyperopt->v1->count; v1+=hyperopt->v1->step, i++) {
         int j=0;
         for(float v2=hyperopt->v2->start; v2<hyperopt->v2->start+hyperopt->v2->step*hyperopt->v2->count; v2+=hyperopt->v2->step, j++) {
-            printf("[HYPEROPT] %d/%d ", i*hyperopt->v2->count+j+1, hyperopt->v1->count*hyperopt->v2->count);
+            bbprintf("[HYPEROPT] %d/%d ", i*hyperopt->v2->count+j+1, hyperopt->v1->count*hyperopt->v2->count);
             switch(hyperopt->v1->type) {
                 case HYPER_VARIABLE_TYPE_INT:
                     *(int*) hyperopt->v1->variable = (int) v1;
-                printf("v1:%d ", *(int*) hyperopt->v1->variable);
+                bbprintf("v1:%d ", *(int*) hyperopt->v1->variable);
                 break;
                 case HYPER_VARIABLE_TYPE_FLOAT:
                     *(float*) hyperopt->v1->variable = v1;
-                printf("v1:%f ", *(float*) hyperopt->v1->variable);
+                bbprintf("v1:%f ", *(float*) hyperopt->v1->variable);
                 break;
             }
 
             switch(hyperopt->v2->type) {
                 case HYPER_VARIABLE_TYPE_INT:
                     *(int*) hyperopt->v2->variable = (int) v2;
-                    printf("v2:%d\n", *(int*) hyperopt->v2->variable);
+                    bbprintf("v2:%d\n", *(int*) hyperopt->v2->variable);
                 break;
                 case HYPER_VARIABLE_TYPE_FLOAT:
                     *(float*) hyperopt->v2->variable = v2;
-                    printf("v2:%f\n", *(float*) hyperopt->v2->variable);
+                    bbprintf("v2:%f\n", *(float*) hyperopt->v2->variable);
                 break;
             }
 
@@ -122,7 +122,7 @@ void run_hyperopt(const char* path, Hyperopt *hyperopt, Dataset *train_data, Dat
             const float test_accuracy = evaluate_model(hyperopt->config, model, opt_data);
             hyperopt->results[i][j] = test_accuracy;
 
-            printf("Got %.2f%% for [%d]-[%d]\n", test_accuracy, i, j);
+            bbprintf("Got %.2f%% for [%d]-[%d]\n", test_accuracy, i, j);
 
             fprintf(file, "%f ", test_accuracy);
             destroy_model(model);
