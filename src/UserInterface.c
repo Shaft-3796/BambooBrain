@@ -278,7 +278,7 @@ void update_statistic_text(const Predictions *predictions, SDL_Renderer* rendere
  */
 void update_prediction_text(const Predictions *predictions, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture) {
     int prediction = predictions->main_prediction;
-    char text[12];
+    char text[12] = "";
     if (prediction >= 0) {
         text[0] = prediction + '0';
         *surface = TTF_RenderText_Solid(font, text, red);
