@@ -1,13 +1,11 @@
 #pragma once
 
+#include "Settings.h"
 #include "Dataset.h"
 #include "Model.h"
 #include "Split.h"
 #include "Predictions.h"
 #include "DecisionTree.h"
-
-
-#define SHOW_PROGRESS 1  // whether to show progress
 
 
 /**
@@ -81,6 +79,8 @@ typedef enum PreProcessingMergeMode {
     PP_MERGE_MODE_ADD_NOW,
     PP_MERGE_MODE_ADD_LATER,
 } PreProcessingMergeMode;
+
+struct sConfig;  // Forward declaration
 
 typedef void (PreProcessingFunction)(const struct sConfig *config, const int *features, int feature_count, int **new_features, int *new_feature_count);
 

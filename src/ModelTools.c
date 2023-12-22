@@ -15,7 +15,7 @@ Model *load_model(const Config *config, const char *train_data_path, const char 
     if(model_path) {
         FILE *storage = fopen(model_path, "rb");
         if(storage) {
-            printf("Model found at %s\n", model_path);
+            bbprintf("Model found at %s\n", model_path);
             Model *model = read_model(storage);
             model->mode = config->model_mode;  // TODO: REMOVE THIS LINE
             fclose(storage);
@@ -30,7 +30,7 @@ Model *load_model(const Config *config, const char *train_data_path, const char 
         FILE *storage = fopen(model_path, "wb");
         write_model(storage, model);
         fclose(storage);
-        printf("Model saved to %s\n", model_path);
+        bbprintf("Model saved to %s\n", model_path);
     }
 
     destroy_dataset(data);

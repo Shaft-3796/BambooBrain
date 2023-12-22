@@ -40,26 +40,26 @@ void test_pre_processing() {
     data.instances[0] = a;
 
     // print dataset
-    printf("No steps:\n");
+    bbprintf("No steps:\n");
     for (int i = 0; i < data.instance_count; ++i) {
-        printf("Instance %d: ", i);
+        bbprintf("Instance %d: ", i);
         for (int j = 0; j < data.feature_count; ++j) {
-            printf("%d ", data.instances[i].values[j]);
+            bbprintf("%d ", data.instances[i].values[j]);
         }
     }
-    printf("\n");
+    bbprintf("\n");
 
     apply_pp_steps_to_dataset(&config, &data);
 
     // print dataset
-    printf("With steps:\n");
+    bbprintf("With steps:\n");
     for (int i = 0; i < data.instance_count; ++i) {
-        printf("Instance %d: ", i);
+        bbprintf("Instance %d: ", i);
         for (int j = 0; j < data.feature_count; ++j) {
-            printf("%d ", data.instances[i].values[j]);
+            bbprintf("%d ", data.instances[i].values[j]);
         }
     }
-    printf("\n");
+    bbprintf("\n");
 
     exit(1);
 }
@@ -90,8 +90,6 @@ void hyper_opt() {
 
         .pencil_radius = 1.2,
         .tickrate = 100,
-
-        NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL,
     };
     apply_config(&config);
     //add_pp_step(&config, PP_STEP_BLACK_AND_WHITE, PP_MERGE_MODE_REPLACE);
@@ -102,7 +100,7 @@ void hyper_opt() {
     char test_path[128] = "datasets/MNIST_test.txt";
     char opt_path[128] = "../datasets/hyperopt.bb";
 
-    printf("Loading datasets...\n");
+    bbprintf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
     Dataset *testData = parse_dataset_from_file(test_path);
 
@@ -110,7 +108,7 @@ void hyper_opt() {
     apply_pp_steps_to_dataset(&config, trainData);
     apply_pp_steps_to_dataset(&config, testData);
 
-    printf("Loading hyperopt...\n");
+    bbprintf("Loading hyperopt...\n");
     Hyperopt *hyperopt = create_hyperopt(&config);
     add_hypervar(hyperopt, &config.tree_count, HYPER_VARIABLE_TYPE_INT, 5, 15, 2);
     add_hypervar(hyperopt, (int*)&config.bagging_proportion, HYPER_VARIABLE_TYPE_FLOAT, 0.1, 0.1, 10);
@@ -153,8 +151,6 @@ void validate_moodle(int argc, char** argv) {
 
         .pencil_radius = 1.2,
         .tickrate = 100,
-
-        NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL,
     };
 
     Dataset *ds = parse_dataset_from_file(train);
@@ -164,7 +160,7 @@ void validate_moodle(int argc, char** argv) {
 
     Predictions **predictions = predict_all_from_model(&config, model, test_ds);
     for(int i=0; i<test_ds->instance_count; ++i) {
-        printf("%d\n", predictions[i]->main_prediction);
+        bbprintf("%d\n", predictions[i]->main_prediction);
         destroy_predictions(predictions[i]);
     }
 
@@ -180,7 +176,7 @@ int main(int argc, char** argv){
 
     //test_pre_processing();
 
-    hyper_opt();
+    //hyper_opt();
 
     /* Algorithm configuration */
     Config config = {
@@ -207,9 +203,8 @@ int main(int argc, char** argv){
 
         .pencil_radius = 1.2,
         .tickrate = 100,
-
-        NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL,
     };
+
     apply_config(&config);
     //add_pp_step(&config, PP_STEP_BLACK_AND_WHITE, PP_MERGE_MODE_REPLACE);
 
@@ -219,7 +214,7 @@ int main(int argc, char** argv){
     char test_path[128] = "datasets/MNIST_test.txt";
     char model_path[128] = "../datasets/mnist_forest.bb";
 
-    printf("Loading datasets...\n");
+    bbprintf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
     Dataset *testData = parse_dataset_from_file(test_path);
 
@@ -227,17 +222,17 @@ int main(int argc, char** argv){
     apply_pp_steps_to_dataset(&config, trainData);
     apply_pp_steps_to_dataset(&config, testData);
 
-    printf("Loading model...\n");
+    bbprintf("Loading model...\n");
     Model *model = load_model(&config, path, model_path);
 
-    create_ui(&config, model);
+    //create_ui(&config, model);
 
     //const float train_accuracy = evaluate_model(&config, model, trainData);
     const float test_accuracy = evaluate_model(&config, model, testData);
 
-    //printf("Train accuracy: %.2f%%\n", train_accuracy*100);
-    printf("Test accuracy: %.2f%%\n", test_accuracy*100);
-    printf("Nodes: %d\n", count_model_nodes(model));
+    //bbprintf("Train accuracy: %.2f%%\n", train_accuracy*100);
+    bbprintf("Test accuracy: %.2f%%\n", test_accuracy*100);
+    bbprintf("Nodes: %d\n", count_model_nodes(model));
 
     destroy_dataset(trainData);
     destroy_dataset(testData);

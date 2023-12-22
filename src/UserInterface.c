@@ -22,7 +22,7 @@ SDL_Color grey = {100, 100, 100, 255};
  */
 int init_sdl() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        printf("Error while initializing SDL library - %s\n", SDL_GetError());
+        bbprintf("Error while initializing SDL library - %s\n", SDL_GetError());
         return EXIT_FAILURE;
     }
 
@@ -35,7 +35,7 @@ int init_sdl() {
     }
 
     if (TTF_Init() < 0) {
-        printf("Error while initializing SDL TTF library - %s\n", SDL_GetError());
+        bbprintf("Error while initializing SDL TTF library - %s\n", SDL_GetError());
         return EXIT_FAILURE;
     }
 

@@ -20,7 +20,7 @@ void apply_config(Config *config) {
             config->predict_from_model = predict_from_model_single_tree;
             break;
         default:
-            printf("Error: unknown model mode\n");
+            bbprintf("Error: unknown model mode\n");
             exit(1);
     }
 
@@ -30,7 +30,7 @@ void apply_config(Config *config) {
             config->create_tree = create_decision_tree_from_prunning_threshold;
             break;
         default:
-            printf("Error: unknown create tree mode\n");
+            bbprintf("Error: unknown create tree mode\n");
             exit(1);
     }
 
@@ -40,7 +40,7 @@ void apply_config(Config *config) {
             config->compute_split = compute_purest_feature_split;
             break;
         default:
-            printf("Error: unknown compute split mode\n");
+            bbprintf("Error: unknown compute split mode\n");
             exit(1);
     }
 
@@ -53,7 +53,7 @@ void apply_config(Config *config) {
             config->get_thresholds = get_subproblem_threshold_all_values;
             break;
         default:
-            printf("Error: unknown threshold mode\n");
+            bbprintf("Error: unknown threshold mode\n");
             exit(1);
     }
 
@@ -63,7 +63,7 @@ void apply_config(Config *config) {
             config->get_impurity = gini_impurity;
             break;
         default:
-            printf("Error: unknown impurity mode\n");
+            bbprintf("Error: unknown impurity mode\n");
             exit(1);
     }
 
@@ -73,7 +73,7 @@ void apply_config(Config *config) {
             config->apply_bagging = bagging_from_proportion;
             break;
         default:
-            printf("Error: unknown bagging mode\n");
+            bbprintf("Error: unknown bagging mode\n");
             exit(1);
     }
 
@@ -86,7 +86,7 @@ void apply_config(Config *config) {
             config->predict_from_tree = predict_from_tree_and_sigmoid_score;
             break;
         default:
-            printf("Error: unknown predict from tree mode\n");
+            bbprintf("Error: unknown predict from tree mode\n");
             exit(1);
     }
 }
@@ -114,7 +114,7 @@ void add_pp_step(Config *config, const PreProcessingStep step, const PreProcessi
             config->pre_processing_functions[config->pre_processing_step_count-1] = instance_to_black_and_white;
             break;
         default:
-            printf("Error: unknown preprocessing step\n");
+            bbprintf("Error: unknown preprocessing step\n");
             exit(1);
     }
 

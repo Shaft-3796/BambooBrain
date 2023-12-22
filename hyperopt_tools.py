@@ -4,7 +4,7 @@ from matplotlib.colors import LightSource
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
-PATH = "datasets/pend_tree_count_bagging.bb"
+PATH = "datasets/hyperopt.bb"
 
 with open(PATH, "r") as f:
     lines = f.readlines()

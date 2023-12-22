@@ -13,7 +13,7 @@ static FILE* open_dataset_file(const char* path) {
 
     FILE *file = fopen(path, "r");
     if (!file) {
-        printf("Error: Unable to open file\n");
+        bbprintf("Error: Unable to open file\n");
         return NULL;
     }
 
@@ -181,11 +181,11 @@ void free_subproblem_excess_memory(Subproblem *sp) {
  * @param sp the subproblem to print
  */
 void print_subproblem(Subproblem *sp) {
-    printf("Dataset with %d classes of %d features\n", sp->class_count, sp->feature_count);
-    printf("Size = %d, capacity = %d\n", sp->instance_count, sp->capacity);
+    bbprintf("Dataset with %d classes of %d features\n", sp->class_count, sp->feature_count);
+    bbprintf("Size = %d, capacity = %d\n", sp->instance_count, sp->capacity);
 
     for (int i = 0; i < sp->class_count; ++i) {
-        printf("- class %d: %d instances\n", i, sp->classes[i].instance_count);
+        bbprintf("- class %d: %d instances\n", i, sp->classes[i].instance_count);
     }
 
 }

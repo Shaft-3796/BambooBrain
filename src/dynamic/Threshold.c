@@ -8,7 +8,7 @@
  * @return the threshold in a float array
  */
 float *get_subproblem_threshold_min_max(const Config *config, const Subproblem *sp, const int feature_id) {
-    if(!sp->instance_count) {printf("Error: get_subproblem_threshold_min_max: subproblem has no instances\n"); exit(1);}
+    if(!sp->instance_count) {bbprintf("Error: get_subproblem_threshold_min_max: subproblem has no instances\n"); exit(1);}
 
     // Min & max values
     int min = sp->instances[0]->values[feature_id], max = sp->instances[0]->values[feature_id];
@@ -33,7 +33,7 @@ float *get_subproblem_threshold_min_max(const Config *config, const Subproblem *
  * @return the threshold in a float array
  */
 float *get_subproblem_threshold_all_values(const Config *config, const Subproblem *sp, const int feature_id) {
-    if(!sp->instance_count) {printf("Error: get_subproblem_threshold_all_values: subproblem has no instances\n"); exit(1);}
+    if(!sp->instance_count) {bbprintf("Error: get_subproblem_threshold_all_values: subproblem has no instances\n"); exit(1);}
 
     assert (config->threshold_step > 0);
 
