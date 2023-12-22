@@ -36,22 +36,22 @@ int create_ui(Config *config, Model *model);
 
 /**
  * @brief Load a dataset and display it on the texture
- * @param filename the filename of the output file
- * @param texture the SDL image to export
+ * @param instance the instance to load
+ * @param texture the SDL image to import
  * @param window the SDL window
  * @return void
  */
-void load_texture(const char* filename, SDL_Texture* texture, SDL_Window *window);
+void load_texture(Instance *instance, SDL_Texture* texture, SDL_Window *window);
 
 /**
  * @brief Save a texture into a dataset of one instance
  * @param config the config
- * @param filename the filename of the output file
+ * @param instance the instance of the output texture
  * @param texture the SDL image to export
  * @param window the SDL window
  * @return instance
  */
-Instance *save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model);
+Instance *save_texture(Config *config, Instance *instance, SDL_Texture* texture, SDL_Window *window, Model *model);
 
 /**
  * @brief Draw a pixel on a texture given colour and coordinates
