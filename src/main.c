@@ -192,7 +192,7 @@ int main(int argc, char** argv){
     Config config = {
         .model_mode = MODEL_MODE_RANDOM_FOREST,
         .create_tree = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
-        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_THRESHOLD,
+        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_SIGMOID_SCORE,
         .compute_split_mode = COMPUTE_SPLIT_MODE_PUREST_FEATURE,
         .threshold_mode = THRESHOLD_MODE_MID_MIN_MAX,
         .impurity_mode = IMPURITY_MODE_GINI,
@@ -234,7 +234,7 @@ int main(int argc, char** argv){
     bbprintf("Loading model...\n");
     Model *model = load_model(&config, path, model_path);
 
-    //create_ui(&config, model);
+    create_ui(&config, model);
 
     //const float train_accuracy = evaluate_model(&config, model, trainData);
     const float test_accuracy = evaluate_model(&config, model, testData);
