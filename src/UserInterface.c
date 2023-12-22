@@ -1,5 +1,7 @@
 #include "UserInterface.h"
 
+#include "PreProcessing.h"
+
 
 int max(int a, int b) {
     return a > b ? a : b;
@@ -428,6 +430,7 @@ int create_ui(Config *config, Model *model) {
 
                         // Save texture and calculate prediction
                         instance = save_texture(config, "../datasets/test.txt", texture, window, model);
+                        apply_pp_steps_to_instance(config, instance, TEXTURE_WIDTH*TEXTURE_HEIGHT);
                         predictions = config->predict_from_model(config, model, instance);
 
                         // Update texts on screen

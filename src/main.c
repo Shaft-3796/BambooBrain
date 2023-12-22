@@ -93,6 +93,7 @@ int main(int argc, char** argv){
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL,
     };
     apply_config(&config);
+    // add_pp_step(&config, PP_STEP_BLACK_AND_WHITE, PP_MERGE_MODE_REPLACE);
 
     srand(time(NULL));
 
@@ -103,6 +104,10 @@ int main(int argc, char** argv){
     printf("Loading datasets...\n");
     Dataset *trainData = parse_dataset_from_file(path);
     Dataset *testData = parse_dataset_from_file(test_path);
+
+    // Pre Processing
+    apply_pp_steps_to_dataset(&config, trainData);
+    apply_pp_steps_to_dataset(&config, testData);
 
     printf("Loading model...\n");
     Model *model = load_model(&config, path, model_path);
