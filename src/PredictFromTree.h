@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Config.h"
-#include "../Dataset.h"
-#include "../DecisionTree.h"
+#include "Config.h"
+#include "Dataset.h"
+#include "DecisionTree.h"
 
 
 /**

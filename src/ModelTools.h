@@ -3,8 +3,8 @@
 #include "Model.h"
 #include "Predictions.h"
 #include "DecisionTreeTools.h"
-#include "dynamic/CreateModel.h"
-#include "dynamic/PredictFromModel.h"
+#include "CreateModel.h"
+#include "PredictFromModel.h"
 
 
 /**

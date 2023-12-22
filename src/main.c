@@ -6,7 +6,6 @@
 #include "Hyperopt.h"
 #include "ModelTools.h"
 #include "PreProcessing.h"
-#include "UserInterface.h"
 #include "Progress.h"
 
 
@@ -249,7 +248,7 @@ void user_interface() {
 
     bbprintf("Loading model...\n");
     Model *model = load_model(&config, model_path, model_path);
-    create_ui(&config, model);
+    // create_ui(&config, model);
     destroy_model(model);
     exit(1);
 }
@@ -352,9 +351,9 @@ int main(int argc, char** argv){
     print_logo();
 
     // Uncomment only one of the following lines
-    user_interface();  // Run the user interface
-    // evaluation();  // Run the creating/evaluation of a model
+    // user_interface();  // Run the user interface
+    //evaluation();  // Run the creating/evaluation of a model
     // hyper_opt();  // Run the hyper optimizer
 
-    // validate_moodle(argc, argv);  // Validate moodle test, make sure to set VERBOSE to 0 in Settings.h
+    validate_moodle(argc, argv);  // Validate moodle test, make sure to set VERBOSE to 0 in Settings.h
 }

@@ -1,15 +1,15 @@
 #pragma once
 
 #include "Config.h"
-#include "dynamic/CreateModel.h"
-#include "dynamic/CreateTree.h"
-#include "dynamic/ComputeSplit.h"
-#include "dynamic/Impurity.h"
-#include "dynamic/Threshold.h"
-#include "dynamic/Bagging.h"
-#include "dynamic/PredictFromModel.h"
-#include "dynamic/PredictFromTree.h"
-#include "dynamic/PreProcessInstance.h"
+#include "CreateModel.h"
+#include "CreateTree.h"
+#include "ComputeSplit.h"
+#include "Impurity.h"
+#include "Threshold.h"
+#include "Bagging.h"
+#include "PredictFromModel.h"
+#include "PredictFromTree.h"
+#include "PreProcessInstance.h"
 
 
 /**

@@ -1,6 +1,6 @@
 #include "PredictFromTree.h"
 
-#include "../DecisionTreeTools.h"
+#include "DecisionTreeTools.h"
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 
