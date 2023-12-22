@@ -110,12 +110,6 @@ Instance *save_texture(Config *config, Instance *instance, SDL_Texture* texture,
             instance->values[idx] = r;
         }
     }
-
-    // Add preprocessing filters
-    add_pp_step(config, PP_STEP_BLACK_AND_WHITE, PP_MERGE_MODE_REPLACE);
-    add_pp_step(config, PP_STEP_CENTER, PP_MERGE_MODE_REPLACE);
-
-
     apply_pp_steps_to_instance(config, instance, TEXTURE_WIDTH*TEXTURE_HEIGHT);
 
 
@@ -307,6 +301,10 @@ int create_ui(Config *config, Model *model) {
     SDL_Texture *texture = NULL;
 
     int w, h;
+
+    // Add preprocessing filters
+    add_pp_step(config, PP_STEP_BLACK_AND_WHITE, PP_MERGE_MODE_REPLACE);
+    add_pp_step(config, PP_STEP_CENTER, PP_MERGE_MODE_REPLACE);
 
     create_SDL_window(&window, &renderer, &texture);
 
