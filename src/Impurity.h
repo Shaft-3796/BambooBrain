@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Config.h"
-#include "../Dataset.h"
-#include "../SplitTools.h"
+#include "Config.h"
+#include "Dataset.h"
+#include "SplitTools.h"
 
 
 /**

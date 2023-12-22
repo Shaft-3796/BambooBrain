@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Config.h"
-#include "../Dataset.h"
+#include "Config.h"
+#include "Dataset.h"
 
 
 /**

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../Model.h"
+#include "Model.h"
 #include "Bagging.h"
 #include "CreateTree.h"
-#include "../Storage.h"
-#include "../Progress.h"
+#include "Storage.h"
+#include "Progress.h"
 
 
 /**

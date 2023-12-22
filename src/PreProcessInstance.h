@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Config.h"
+#include "Config.h"
 
 /**
  * @brief Preprocess an instance to set all features to only 0 or 255 (black or white)

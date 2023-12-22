@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Dataset.h"
-#include "../Model.h"
+#include "Dataset.h"
+#include "Model.h"
 #include "PredictFromTree.h"
 
 

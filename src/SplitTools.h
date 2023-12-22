@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Dataset.h"
-#include "dynamic/Impurity.h"
-#include "dynamic/Threshold.h"
+#include "Impurity.h"
+#include "Threshold.h"
 
 /**
  * @brief split_subproblem splits a subproblem into 2 subproblems based on a feature and a threshold

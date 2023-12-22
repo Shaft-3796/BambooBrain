@@ -6,7 +6,6 @@
 #include "Hyperopt.h"
 #include "ModelTools.h"
 #include "PreProcessing.h"
-#include "UserInterface.h"
 #include "Progress.h"
 
 void test_pre_processing() {
@@ -142,7 +141,7 @@ void validate_moodle(int argc, char** argv) {
 
         .tree_count = 110,
 
-        .max_tree_depth = 200,
+        .max_tree_depth = 150,
         .prunning_threshold = 1.0,
 
         .sigmoid_lambda = 0.15,
@@ -200,10 +199,10 @@ int main(int argc, char** argv){
 
         .tree_count = 110,
 
-        .max_tree_depth = 200,
+        .max_tree_depth = 150,
         .prunning_threshold = 1.0,
 
-        .sigmoid_lambda = 0.2,
+        .sigmoid_lambda = 0.15,
 
         .threshold_step = 1,
 

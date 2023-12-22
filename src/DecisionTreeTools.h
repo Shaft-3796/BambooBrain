@@ -2,8 +2,8 @@
 
 #include "Predictions.h"
 #include "DecisionTree.h"
-#include "dynamic/ComputeSplit.h"
-#include "dynamic/PredictFromTree.h"
+#include "ComputeSplit.h"
+#include "PredictFromTree.h"
 
 
 /**
