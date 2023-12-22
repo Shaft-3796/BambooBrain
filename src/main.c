@@ -126,17 +126,21 @@ void validate_moodle(int argc, char** argv) {
     char *train = argv[1];
     char *test = argv[2];
 
+
+    train = "datasets/PENDIGITS_train.txt";
+    test = "datasets/PENDIGITS_test.txt";
+
     /* Algorithm configuration */
     Config config = {
         .model_mode = MODEL_MODE_RANDOM_FOREST,
         .create_tree = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
-        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_SIGMOID_SCORE,
+        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_THRESHOLD,
         .compute_split_mode = COMPUTE_SPLIT_MODE_PUREST_FEATURE,
         .threshold_mode = THRESHOLD_MODE_MID_MIN_MAX,
         .impurity_mode = IMPURITY_MODE_GINI,
         .bagging_mode = BAGGING_MODE_PROPORTIONAL,
 
-        .tree_count = 50,
+        .tree_count = 110,
 
         .max_tree_depth = 200,
         .prunning_threshold = 1.0,
@@ -145,13 +149,14 @@ void validate_moodle(int argc, char** argv) {
 
         .threshold_step = 1,
 
-        .bagging_proportion = 0.75,
+        .bagging_proportion = 1.0,
 
-        .feature_bagging_proportion = 0.75,
+        .feature_bagging_proportion = 0.8,
 
         .pencil_radius = 1.2,
         .tickrate = 100,
     };
+    apply_config(&config);
 
     Dataset *ds = parse_dataset_from_file(train);
     Dataset *test_ds = parse_dataset_from_file(test);
@@ -160,7 +165,7 @@ void validate_moodle(int argc, char** argv) {
 
     Predictions **predictions = predict_all_from_model(&config, model, test_ds);
     for(int i=0; i<test_ds->instance_count; ++i) {
-        bbprintf("%d\n", predictions[i]->main_prediction);
+        printf("%d\n", predictions[i]->main_prediction);
         destroy_predictions(predictions[i]);
     }
 
@@ -168,27 +173,32 @@ void validate_moodle(int argc, char** argv) {
     destroy_dataset(test_ds);
     destroy_model(model);
     free(predictions);
+
+    exit(1);
 }
 
 
 int main(int argc, char** argv){
+    srand(time(NULL));
     print_logo();
 
     //test_pre_processing();
 
     //hyper_opt();
 
+    // validate_moodle(argc, argv);
+
     /* Algorithm configuration */
     Config config = {
         .model_mode = MODEL_MODE_RANDOM_FOREST,
         .create_tree = CREATE_TREE_MODE_PRUNNING_THRESHOLD,
-        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_SIGMOID_SCORE,
+        .predict_from_tree_mode = PREDICT_FROM_TREE_MODE_THRESHOLD,
         .compute_split_mode = COMPUTE_SPLIT_MODE_PUREST_FEATURE,
         .threshold_mode = THRESHOLD_MODE_MID_MIN_MAX,
         .impurity_mode = IMPURITY_MODE_GINI,
         .bagging_mode = BAGGING_MODE_PROPORTIONAL,
 
-        .tree_count = 5,
+        .tree_count = 110,
 
         .max_tree_depth = 200,
         .prunning_threshold = 1.0,
@@ -197,14 +207,13 @@ int main(int argc, char** argv){
 
         .threshold_step = 1,
 
-        .bagging_proportion = 0.5,
+        .bagging_proportion = 0.8,
 
-        .feature_bagging_proportion = 1.0,
+        .feature_bagging_proportion = 0.8,
 
         .pencil_radius = 1.2,
         .tickrate = 100,
     };
-
     apply_config(&config);
     //add_pp_step(&config, PP_STEP_BLACK_AND_WHITE, PP_MERGE_MODE_REPLACE);
 

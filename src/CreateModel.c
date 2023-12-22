@@ -14,10 +14,21 @@ static int* gen_random_integers(const int from, const int to, const int count) {
  */
 static bool *generate_feature_bagging(const int feature_count, const float feature_bagging_proportion) {
     bool *feature_bagging = (bool*) calloc(feature_count, sizeof(bool));
-    int *integers = gen_random_integers(0, 100, feature_count);
-    for(int i=0; i<feature_count; ++i) feature_bagging[i] = integers[i] < feature_bagging_proportion*100;
+    const int selected_count = feature_bagging_proportion * feature_count;
 
-    free(integers);
+    int *indexes = calloc(feature_count, sizeof(int));
+    for(int i=0; i<feature_count; ++i) indexes[i] = i;
+
+    for(int i=0; i<selected_count; ++i) {
+        int *integers = gen_random_integers(0, feature_count-i, 1);
+        const int index = indexes[integers[0]];
+        feature_bagging[index] = true;
+        // memcpy to remove the index
+        memcpy(indexes+integers[0], indexes+integers[0]+1, (feature_count-i-integers[0]-1)*sizeof(int));
+        free(integers);
+    }
+
+    free(indexes);
     return feature_bagging;
 }
 
