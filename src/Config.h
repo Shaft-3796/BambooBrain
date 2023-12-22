@@ -130,6 +130,9 @@ typedef struct sConfig {
     /* BaggingConfig */
     float bagging_proportion;  // Proportion of instances for each subproblem, for BAGGING_MODE_PROPORTIONAL
 
+    /* FeatureBaggingConfig */
+    float feature_bagging_proportion;
+
     /* UserInterfaceConfig */
     float pencil_radius; // Size of pencil to draw
     float tickrate; // Predicting frequency while drawing (in milliseconds)
@@ -137,6 +140,8 @@ typedef struct sConfig {
     /* PreProcessingConfig */
 
     /* Additional arguments YOU DO NOT NEED TO CONFIGURE IT */
+    bool *feature_bagging;  // Array of bool, true if we can use the feature at the index
+    int feature_bagging_count;  // Number of features we can use
 
     /* Function Pointers & other AUTO GENERATED */
     Model* (*create_model)(const struct sConfig *config, const Dataset *data);

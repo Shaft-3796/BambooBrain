@@ -13,6 +13,9 @@ Split compute_purest_feature_split(const Config *config, const Subproblem *sp) {
     float impurity = 1.0;
 
     for(int feature_id=0; feature_id < sp->feature_count; feature_id++) {
+        // Check for feature bagging
+        if(config->feature_bagging && !config->feature_bagging[feature_id]) continue;
+
         // Compute the threshold for the feature
         float *thresholds = config->get_thresholds(config, sp, feature_id);
 

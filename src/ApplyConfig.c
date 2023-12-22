@@ -6,6 +6,9 @@
  * @param config the configuration
  */
 void apply_config(Config *config) {
+    if(config->prunning_threshold < 0) config->prunning_threshold = 0;
+    if(config->prunning_threshold > 1) config->prunning_threshold = 1;
+
     // Model mode
     switch (config->model_mode) {
         case MODEL_MODE_RANDOM_FOREST:

@@ -16,7 +16,7 @@
  * @param data the dataset
  * @return a pointer to the model
  */
-Model *create_random_forest(const Config *config, const Dataset *data);
+Model *create_random_forest(Config *config, const Dataset *data);
 
 /**
  * @brief create_tree creates a simple decision tree model (MODEL_MODE_TREE)

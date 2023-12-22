@@ -36,3 +36,8 @@ void update_progress(Progress *progress, const int current);
  * @param progress The progress to finish
  */
 void finalize_progress(Progress *progress);
+
+/**
+ * @brief Print the bamboubrain logo
+ */
+void print_logo();
