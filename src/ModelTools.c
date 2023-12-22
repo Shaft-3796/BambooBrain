@@ -1,5 +1,6 @@
 #include "ModelTools.h"
 
+#include "PreProcessing.h"
 #include "Progress.h"
 
 
@@ -24,6 +25,8 @@ Model *load_model(const Config *config, const char *train_data_path, const char 
     }
 
     Dataset *data = parse_dataset_from_file(train_data_path);
+    apply_pp_steps_to_dataset(config, data);
+
     Model *model = config->create_model(config, data);
 
     if(model_path) {

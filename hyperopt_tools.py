@@ -23,11 +23,6 @@ with open(PATH, "r") as f:
     print("matrix: ", matrix)
 
 
-# plot only v1
-"""plt.plot(x_axis_ticks_labels, matrix[0], label="v1")
-plt.show()
-exit(0)"""
-
 # Plot a heatmap
 fig, ax = plt.subplots()
 im = ax.imshow(matrix, cmap=cm.coolwarm)
