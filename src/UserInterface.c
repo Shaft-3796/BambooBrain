@@ -244,9 +244,25 @@ void reset_drawing(SDL_Texture *texture) {
  * @param texture The text texture
  */
 void update_statistic_text(const Predictions *predictions, SDL_Renderer* renderer, TTF_Font* font, SDL_Surface** surface, SDL_Texture** texture) {
+    int indexes[predictions->prediction_count];
+    // Sort predictions->predictions[i]*100 in descending order
+    for (int i = 0; i < predictions->prediction_count; ++i) {
+        indexes[i] = i;
+    }
+    for (int i = 0; i < predictions->prediction_count; ++i) {
+        for (int j = i+1; j < predictions->prediction_count; ++j) {
+            if (predictions->predictions[indexes[i]] < predictions->predictions[indexes[j]]) {
+                int tmp = indexes[i];
+                indexes[i] = indexes[j];
+                indexes[j] = tmp;
+            }
+        }
+    }
+
+
     for (int i = 0; i < predictions->prediction_count; ++i) {
         char text[128] = "";
-        sprintf(text, "%d: %.2f%%", i, predictions->predictions[i]*100);
+        sprintf(text, "%d: %.2f%%", indexes[i], predictions->predictions[indexes[i]]*100);
         *surface = TTF_RenderText_Solid(font, text, grey);
         texture[i] = SDL_CreateTextureFromSurface(renderer, *surface);
     }
