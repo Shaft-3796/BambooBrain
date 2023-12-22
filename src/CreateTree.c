@@ -24,6 +24,9 @@ static DecisionTreeNode* rec_create_decision_tree_from_prunning_threshold(const 
     // Compute the split
     node->split = config->compute_split(config, sp);
 
+    // For instance bagging, unable to separate the subproblem
+    if(node->split.feature_id == -1) { node->class_id = sp->majority_class_id; return node; }
+
     // Split the subproblem
     Subproblem *spl = create_subproblem(sp->instance_count, sp->feature_count, sp->class_count);
     Subproblem *spr = create_subproblem(sp->instance_count, sp->feature_count, sp->class_count);

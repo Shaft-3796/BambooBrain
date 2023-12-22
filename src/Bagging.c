@@ -22,7 +22,7 @@ Subproblem **bagging_from_proportion(const Config *config, const Dataset *data, 
         int *integers = gen_random_integers(0, data->instance_count, (int)(data->instance_count * config->bagging_proportion));
         subproblems[i] = create_subproblem((int)(data->instance_count * config->bagging_proportion), data->feature_count, data->class_count);
         for(int j=0; j<(int)(data->instance_count * config->bagging_proportion); j++) insert_subproblem_instance(subproblems[i], &data->instances[integers[j]]);
-        free(integers);  // Todo: potential segfault but why ??
+        free(integers);
     }
 
     return subproblems;

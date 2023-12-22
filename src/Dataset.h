@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Settings.h"
-#include <SDL.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <math.h>
 
 
 typedef struct sInstance{
