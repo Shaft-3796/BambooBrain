@@ -1,14 +1,9 @@
 #include "UserInterface.h"
 
+#include "ApplyConfig.h"
 #include "PreProcessing.h"
 
 
-int max(int a, int b) {
-    return a > b ? a : b;
-}
-int min(int a, int b) {
-    return a < b ? a : b;
-}
 
 // Some useful colors
 SDL_Color red = {255, 0, 0, 255};
@@ -77,7 +72,7 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
         SDL_GetRGBA(pixels[y * TEXTURE_WIDTH + x], format, &oldR, &oldG, &oldB, &oldA);
 
         // Replace pixel if it is ligther than the old one
-        pixels[y * TEXTURE_WIDTH + x] = SDL_MapRGBA(format,  max(r, oldR),  max(g, oldG),  max(b, oldB),  max(a, oldA));
+        pixels[y * TEXTURE_WIDTH + x] = SDL_MapRGBA(format,  fmax(r, oldR),  fmax(g, oldG),  fmax(b, oldB),  fmax(a, oldA));
     }
 
 
@@ -94,7 +89,7 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
  * @param window the SDL window
  * @return the instance
  */
-Instance *save_texture(Config *config, const char* filename, SDL_Texture* texture, SDL_Window *window, Model *model) {
+Instance *save_texture(Config *config, Instance *instance, SDL_Texture* texture, SDL_Window *window, Model *model) {
     void* tmp;
     Uint32 *pixels;
     int pitch;
@@ -105,71 +100,27 @@ Instance *save_texture(Config *config, const char* filename, SDL_Texture* textur
     SDL_LockTexture(texture, NULL, &tmp, &pitch);
     pixels = tmp;
 
-    const int correction = center_texture(pixels, format);
 
-    Instance *instance = (Instance*) calloc(1, sizeof(Instance));
-    instance->values = (int*) calloc(TEXTURE_WIDTH*TEXTURE_HEIGHT, sizeof(int));
     int idx = 0;
 
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
         for (int j = 0; j < TEXTURE_HEIGHT; ++j, ++idx) {
-            // Add the horizontal correction
-            const int newj = max(0, min(TEXTURE_HEIGHT, j-correction));
-
-            Uint32 pixel = pixels[i * TEXTURE_WIDTH + newj];
+            Uint32 pixel = pixels[i * TEXTURE_WIDTH + j];
             SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
-            instance->values[idx] = r ? 255 : 0;
+            instance->values[idx] = r;
         }
     }
+
+    // Add preprocessing filters
+    add_pp_step(config, PP_STEP_BLACK_AND_WHITE, PP_MERGE_MODE_REPLACE);
+    add_pp_step(config, PP_STEP_CENTER, PP_MERGE_MODE_REPLACE);
+
+
+    apply_pp_steps_to_instance(config, instance, TEXTURE_WIDTH*TEXTURE_HEIGHT);
+
 
     SDL_UnlockTexture(texture);
     return instance;
-}
-
-/**
- * @brief Center the texture to make it fitting more with dataset
- * @param pixels the list of pixels
- * @param format the SDL format
- * @return int the horizontal correction factor (between -TEXTURE_WIDTH and TEXTURE_WIDTH)
- */
-int center_texture(const Uint32 *pixels, const SDL_PixelFormat *format) {
-    Uint8 r, g, b, a;
-    int borderL, borderR;
-    bool found = false;
-
-    // Get the left border
-    for (int i = 0; i < TEXTURE_HEIGHT && !found; ++i) {
-        for (int j = 0; j < TEXTURE_WIDTH && !found; ++j) {
-            Uint32 pixel = pixels[j * TEXTURE_WIDTH + i];
-            SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
-            if (r) {
-                borderL = i;
-                found = true;
-            }
-        }
-    }
-
-    found = false;
-
-    // Get the right border
-    for (int i = TEXTURE_HEIGHT; i > 0 && !found; --i) {
-        for (int j = 0; j < TEXTURE_WIDTH && !found; ++j) {
-            Uint32 pixel = pixels[j * TEXTURE_WIDTH + i];
-            SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
-            if (r) {
-                borderR = i;
-                found = true;
-            }
-        }
-    }
-
-
-    // Calculate the correction factor
-    float texture_mid = TEXTURE_WIDTH/2;
-    float drawing_mid = (borderL + borderR)/2;
-    int correction = texture_mid - drawing_mid;
-
-    return correction;
 }
 
 
@@ -180,13 +131,11 @@ int center_texture(const Uint32 *pixels, const SDL_PixelFormat *format) {
  * @param window the SDL window
  * @return void
  */
-void load_texture(const char* filename, SDL_Texture* texture, SDL_Window *window) {
-    Dataset *trainData = parse_dataset_from_file(filename);
+void load_texture(Instance *instance, SDL_Texture* texture, SDL_Window *window) {
     Uint8 intensity;
-    int r = rand() % trainData->instance_count;
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
         for (int j = 0; j < TEXTURE_HEIGHT; ++j) {
-            intensity = trainData->instances[r].values[j * TEXTURE_WIDTH + i];
+            intensity = instance->values[j * TEXTURE_WIDTH + i];
             draw_pixel(texture, intensity, intensity, intensity, 255, i, j, true);
         }
     }
@@ -391,7 +340,9 @@ int create_ui(Config *config, Model *model) {
     // Save current tick
     Uint32 lastTick = SDL_GetTicks();
 
-    Instance *instance = NULL;
+    Instance *instance = (Instance*) calloc(1, sizeof(Instance));
+    instance->values = (int*) calloc(TEXTURE_WIDTH*TEXTURE_HEIGHT, sizeof(int));
+
     Predictions *predictions = NULL;
 
     while (1) {
@@ -418,6 +369,9 @@ int create_ui(Config *config, Model *model) {
                         case SDL_SCANCODE_SPACE:
                             reset_drawing(texture);
                             break;
+                        case SDL_SCANCODE_T:
+                        load_texture(instance, texture, window);
+                            break;
                         default:
                             break;
                     }
@@ -438,14 +392,16 @@ int create_ui(Config *config, Model *model) {
                         // Draw circle in additive or substractive mode depending on which mouse button is clicked
                         draw_circle(texture, x, y, config->pencil_radius, evt.button.button != SDL_BUTTON_LEFT);
 
+                        // Save texture and calculate prediction
+                        instance = save_texture(config, instance, texture, window, model);
+
                         // Stop there if we didn't reach the trickrate
                         if (lastTick + config->tickrate > SDL_GetTicks()) break;
 
                         // Update last tick
                         lastTick = SDL_GetTicks();
 
-                        // Save texture and calculate prediction
-                        instance = save_texture(config, "../datasets/test.txt", texture, window, model);
+                        // Calculate prediction
                         apply_pp_steps_to_instance(config, instance, TEXTURE_WIDTH*TEXTURE_HEIGHT);
                         predictions = config->predict_from_model(config, model, instance);
 
@@ -467,13 +423,6 @@ int create_ui(Config *config, Model *model) {
         render_statistic_text(model->class_count, window, renderer, statistics_font, statistic_textures);
 
 
-        if(instance) {
-            free(instance->values);
-            free(instance);
-            destroy_predictions(predictions);
-            instance = NULL;
-            predictions = NULL;
-        }
 
         if (renderer) SDL_RenderPresent(renderer);
     }
@@ -490,6 +439,14 @@ int create_ui(Config *config, Model *model) {
         SDL_FreeSurface(text_surface);
     if (text_texture != NULL)
         SDL_DestroyTexture(text_texture);
+
+    if(instance) {
+        free(instance->values);
+        free(instance);
+        destroy_predictions(predictions);
+        instance = NULL;
+        predictions = NULL;
+    }
 
     SDL_Quit();
     IMG_Quit();

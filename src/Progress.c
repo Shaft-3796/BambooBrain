@@ -33,7 +33,7 @@ void update_progress(Progress *progress, const int current) {
     clock_t clock_now = clock();
     double time_elapsed = (double) (clock_now - progress->last_clock) / CLOCKS_PER_SEC;
     int current_diff = progress->current - progress->last_current;
-    double eta = (double) (progress->max - progress->current) / current_diff * time_elapsed;
+    double eta = current_diff * time_elapsed ? (double) (progress->max - progress->current) / current_diff * time_elapsed : 0;
 
     char str_eta[128];
     // If eta is nan
