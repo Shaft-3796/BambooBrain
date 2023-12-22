@@ -269,7 +269,7 @@ void evaluation() {
     // Uncomment only one of the following lines
     // First line to enable model persistence. If the file exists, the model will be loaded from it, otherwise
     // it will be created and saved to it. Second line to disable model persistence, model will always be created
-    char model_path[128] = "../datasets/mnist_forest.bb";
+    char model_path[128] = "datasets/mnist_forest.bb";
     // char *model_path = NULL;
     // --------------------------------------------------
 

@@ -310,8 +310,8 @@ int create_ui(Config *config, Model *model) {
 
 
     // Import fonts
-    TTF_Font *prediction_font = TTF_OpenFont("../fonts/fast99.ttf", 80);
-    TTF_Font *statistics_font = TTF_OpenFont("../fonts/fast99.ttf", 45);
+    TTF_Font *prediction_font = TTF_OpenFont("fonts/fast99.ttf", 80);
+    TTF_Font *statistics_font = TTF_OpenFont("fonts/fast99.ttf", 45);
 
     if (prediction_font == NULL || statistics_font == NULL) {
         fprintf(stderr, "error: font not found\n");
