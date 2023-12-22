@@ -1,14 +1,9 @@
 #include "UserInterface.h"
 
+#include "ApplyConfig.h"
 #include "PreProcessing.h"
 
 
-int max(int a, int b) {
-    return a > b ? a : b;
-}
-int min(int a, int b) {
-    return a < b ? a : b;
-}
 
 // Some useful colors
 SDL_Color red = {255, 0, 0, 255};
@@ -77,7 +72,7 @@ void draw_pixel(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int x,
         SDL_GetRGBA(pixels[y * TEXTURE_WIDTH + x], format, &oldR, &oldG, &oldB, &oldA);
 
         // Replace pixel if it is ligther than the old one
-        pixels[y * TEXTURE_WIDTH + x] = SDL_MapRGBA(format,  max(r, oldR),  max(g, oldG),  max(b, oldB),  max(a, oldA));
+        pixels[y * TEXTURE_WIDTH + x] = SDL_MapRGBA(format,  fmax(r, oldR),  fmax(g, oldG),  fmax(b, oldB),  fmax(a, oldA));
     }
 
 
@@ -105,69 +100,27 @@ Instance *save_texture(Config *config, Instance *instance, SDL_Texture* texture,
     SDL_LockTexture(texture, NULL, &tmp, &pitch);
     pixels = tmp;
 
-    const int correction = center_texture(pixels, format);
 
     int idx = 0;
 
     for (int i = 0; i < TEXTURE_WIDTH; ++i) {
         for (int j = 0; j < TEXTURE_HEIGHT; ++j, ++idx) {
-            // Add the horizontal correction
-            const int newj = max(0, min(TEXTURE_HEIGHT, j-correction));
-
-            Uint32 pixel = pixels[i * TEXTURE_WIDTH + newj];
+            Uint32 pixel = pixels[i * TEXTURE_WIDTH + j];
             SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
-            instance->values[idx] = r ? 255 : 0;
+            instance->values[idx] = r;
         }
     }
+
+    // Add preprocessing filters
+    add_pp_step(config, PP_STEP_BLACK_AND_WHITE, PP_MERGE_MODE_REPLACE);
+    add_pp_step(config, PP_STEP_CENTER, PP_MERGE_MODE_REPLACE);
+
+
+    apply_pp_steps_to_instance(config, instance, TEXTURE_WIDTH*TEXTURE_HEIGHT);
+
 
     SDL_UnlockTexture(texture);
     return instance;
-}
-
-/**
- * @brief Center the texture to make it fitting more with dataset
- * @param pixels the list of pixels
- * @param format the SDL format
- * @return int the horizontal correction factor (between -TEXTURE_WIDTH and TEXTURE_WIDTH)
- */
-int center_texture(const Uint32 *pixels, const SDL_PixelFormat *format) {
-    Uint8 r, g, b, a;
-    int borderL, borderR;
-    bool found = false;
-
-    // Get the left border
-    for (int i = 0; i < TEXTURE_HEIGHT && !found; ++i) {
-        for (int j = 0; j < TEXTURE_WIDTH && !found; ++j) {
-            Uint32 pixel = pixels[j * TEXTURE_WIDTH + i];
-            SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
-            if (r) {
-                borderL = i;
-                found = true;
-            }
-        }
-    }
-
-    found = false;
-
-    // Get the right border
-    for (int i = TEXTURE_HEIGHT; i > 0 && !found; --i) {
-        for (int j = 0; j < TEXTURE_WIDTH && !found; ++j) {
-            Uint32 pixel = pixels[j * TEXTURE_WIDTH + i];
-            SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
-            if (r) {
-                borderR = i;
-                found = true;
-            }
-        }
-    }
-
-
-    // Calculate the correction factor
-    float texture_mid = TEXTURE_WIDTH/2;
-    float drawing_mid = (borderL + borderR)/2;
-    int correction = texture_mid - drawing_mid;
-
-    return correction;
 }
 
 

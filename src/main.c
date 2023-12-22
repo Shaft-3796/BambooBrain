@@ -92,7 +92,8 @@ void hyper_opt() {
         .tickrate = 100,
     };
     apply_config(&config);
-    //add_pp_step(&config, PP_STEP_BLACK_AND_WHITE, PP_MERGE_MODE_REPLACE);
+    add_pp_step(&config, PP_STEP_BLACK_AND_WHITE, PP_MERGE_MODE_REPLACE);
+    add_pp_step(&config, PP_STEP_CENTER, PP_MERGE_MODE_REPLACE);
 
     srand(time(NULL));
 

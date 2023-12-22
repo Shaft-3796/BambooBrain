@@ -113,6 +113,9 @@ void add_pp_step(Config *config, const PreProcessingStep step, const PreProcessi
         case PP_STEP_BLACK_AND_WHITE:
             config->pre_processing_functions[config->pre_processing_step_count-1] = instance_to_black_and_white;
             break;
+        case PP_STEP_CENTER:
+            config->pre_processing_functions[config->pre_processing_step_count-1] = center_instance;
+            break;
         default:
             bbprintf("Error: unknown preprocessing step\n");
             exit(1);

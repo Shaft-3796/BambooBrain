@@ -1,8 +1,8 @@
 #pragma once
 
 
-#define WINDOW_WIDTH 1920
-#define WINDOW_HEIGHT 1080
+#define WINDOW_WIDTH 1920/2
+#define WINDOW_HEIGHT 1080/2
 #define TEXTURE_WIDTH 28
 #define TEXTURE_HEIGHT 28
 

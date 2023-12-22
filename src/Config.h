@@ -63,9 +63,11 @@ typedef enum BaggingMode {
 /**
  * @brief PreProcessingStep steps of the preprocessing
  * PP_STEP_BLACK_AND_WHITE: convert the image to black and white
+ * PP_STEP_CENTER: center the image horizontally
  */
 typedef enum PreProcessingStep {
     PP_STEP_BLACK_AND_WHITE,
+    PP_STEP_CENTER,
 } PreProcessingStep;
 
 /**
