@@ -5,28 +5,32 @@
  * @param config the configuration for the split_compute function
  * - threshold_config: the configuration for the threshold function
  * - impurity_config: the configuration for the impurity function
- * @param args mode specific arguments for the split_compute function
- * No arguments are expected.
  * @param sp the subproblem
  * @return the split
  */
-Split compute_purest_feature_split(const ComputeSplitConfig *config, const ComputeSplitArgs *args, const Subproblem *sp) {
+Split compute_purest_feature_split(const Config *config, const Subproblem *sp) {
     Split split = {0, 0.0};
     float impurity = 1.0;
 
     for(int feature_id=0; feature_id < sp->feature_count; feature_id++) {
+        // Check for feature bagging
+        if(config->feature_bagging && !config->feature_bagging[feature_id]) continue;
 
         // Compute the threshold for the feature
-        ThresholdArgs threshold_args = {};
-        const float _threshold = config->threshold_config->threshold_function(config->threshold_config, &threshold_args, sp, feature_id);
+        float *thresholds = config->get_thresholds(config, sp, feature_id);
+        // For feature bagging, we need to check if the threshold is NULL
+        if(!thresholds) {split.feature_id = -1; return split;}
 
-        ImpurityArgs impurity_args = {.feature_id=feature_id, .threshold=_threshold};
-        const float _impurity = config->impurity_config->impurity_function(config->impurity_config, &impurity_args, sp);
 
-        if(_impurity <= impurity) {
-            split.feature_id = feature_id; split.threshold = _threshold;
-            impurity = _impurity;
+        for(int threshold_id=0; thresholds[threshold_id] != -1.0; threshold_id++) {
+            const float _impurity = config->get_impurity(config, sp, feature_id, thresholds[threshold_id]);
+
+            if(_impurity <= impurity) {
+                split.feature_id = feature_id; split.threshold = thresholds[threshold_id];
+                impurity = _impurity;
+            }
         }
+        free(thresholds);
     }
 
     return split;

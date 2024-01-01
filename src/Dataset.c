@@ -1,5 +1,7 @@
 #include "Dataset.h"
 
+#include "Progress.h"
+
 
 /* --- Dataset parsing --- */
 /**
@@ -11,7 +13,7 @@ static FILE* open_dataset_file(const char* path) {
 
     FILE *file = fopen(path, "r");
     if (!file) {
-        printf("Error: Unable to open file\n");
+        bbprintf("Error: Unable to open file\n");
         return NULL;
     }
 
@@ -54,10 +56,22 @@ static void parse_instance(FILE* file, Instance* instance, const int feature_cou
 static void parse_instances(FILE* file, Dataset* data) {
     data->instances = (Instance*) calloc(data->instance_count, sizeof(Instance));
 
+    Progress progress;
+
+    if(data->instance_count > 500) {
+        init_progress(&progress, data->instance_count, 0, "Reading Dataset");
+        update_progress(&progress, 0);
+    }
+
     for (int i = 0; i < data->instance_count; ++i) {
+        if(data->instance_count > 500 && i%(data->instance_count/500) == 0) {
+            update_progress(&progress, i);
+        }
         Instance *instance = &data->instances[i];
         parse_instance(file, instance, data->feature_count);
     }
+
+    if(data->instance_count > 500) finalize_progress(&progress);
 }
 
 /**
@@ -167,11 +181,11 @@ void free_subproblem_excess_memory(Subproblem *sp) {
  * @param sp the subproblem to print
  */
 void print_subproblem(Subproblem *sp) {
-    printf("Dataset with %d classes of %d features\n", sp->class_count, sp->feature_count);
-    printf("Size = %d, capacity = %d\n", sp->instance_count, sp->capacity);
+    bbprintf("Dataset with %d classes of %d features\n", sp->class_count, sp->feature_count);
+    bbprintf("Size = %d, capacity = %d\n", sp->instance_count, sp->capacity);
 
     for (int i = 0; i < sp->class_count; ++i) {
-        printf("- class %d: %d instances\n", i, sp->classes[i].instance_count);
+        bbprintf("- class %d: %d instances\n", i, sp->classes[i].instance_count);
     }
 
 }

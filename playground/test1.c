@@ -38,12 +38,12 @@ void write_split(FILE *storage, const Split *split){
 
 void print_node(const DecisionTreeNode *node, int level){
     if(!node) {
-        for(int i=0; i<level; ++i) printf("\t");
-        printf("NULL\n");
+        for(int i=0; i<level; ++i) bbprintf("\t");
+        bbprintf("NULL\n");
     } else {
         // Class id
-        for(int i=0; i<level; ++i) printf("\t");
-        printf("%d\n", node->class_id);
+        for(int i=0; i<level; ++i) bbprintf("\t");
+        bbprintf("%d\n", node->class_id);
         print_node(node->left, level+1);
         print_node(node->right, level+1);
     }
@@ -78,12 +78,12 @@ int main(){
     }
 
     // Print model
-    printf("Model:\n");
-    printf("Mode: %d\n", model->mode);
-    printf("Class count: %d\n", model->class_count);
-    printf("Tree count: %d\n", model->tree_count);
+    bbprintf("Model:\n");
+    bbprintf("Mode: %d\n", model->mode);
+    bbprintf("Class count: %d\n", model->class_count);
+    bbprintf("Tree count: %d\n", model->tree_count);
     for(int j=0; j<model->tree_count; j++) {
-        printf("Tree %d:\n", j);
+        bbprintf("Tree %d:\n", j);
         print_node(model->trees[j], 0);
     }
 
@@ -97,12 +97,12 @@ int main(){
     fclose(storage2);
 
     // Print model
-    printf("Model 2:\n");
-    printf("Mode: %d\n", model->mode);
-    printf("Class count: %d\n", model->class_count);
-    printf("Tree count: %d\n", model->tree_count);
+    bbprintf("Model 2:\n");
+    bbprintf("Mode: %d\n", model->mode);
+    bbprintf("Class count: %d\n", model->class_count);
+    bbprintf("Tree count: %d\n", model->tree_count);
     for(int l=0; l<model->tree_count; l++) {
-        printf("Tree %d:\n", l);
+        bbprintf("Tree %d:\n", l);
         print_node(model->trees[l], 0);
     }
 

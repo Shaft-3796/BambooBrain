@@ -1,33 +1,39 @@
 #include "ModelTools.h"
 
+#include "PreProcessing.h"
+#include "Progress.h"
+
 
 /**
  * @brief Load a model, create it if persistence is not enabled or if the file does not exist.
  * Save it to the file if persistence is enabled.
- * @param config the configuration for the create_model function
+ * @param config the configuration
  * @param train_data_path the path to the training data
  * @param model_path the path to enable persistence, NULL to disable persistence,
  * if the file does not exist, the model will be created and saved to the file
  */
-Model *load_model(CreateModelConfig *config, const char *train_data_path, const char *model_path) {
+Model *load_model(const Config *config, const char *train_data_path, const char *model_path) {
     if(model_path) {
         FILE *storage = fopen(model_path, "rb");
         if(storage) {
-            printf("Model found at %s\n", model_path);
+            bbprintf("Model found at %s\n", model_path);
             Model *model = read_model(storage);
+            model->mode = config->model_mode;  // TODO: REMOVE THIS LINE
             fclose(storage);
             return model;
         }
     }
 
     Dataset *data = parse_dataset_from_file(train_data_path);
-    Model *model = config->create_model_function(config, &(CreateModelArgs){}, data);
+    apply_pp_steps_to_dataset(config, data);
+
+    Model *model = config->create_model(config, data);
 
     if(model_path) {
         FILE *storage = fopen(model_path, "wb");
         write_model(storage, model);
         fclose(storage);
-        printf("Model saved to %s\n", model_path);
+        bbprintf("Model saved to %s\n", model_path);
     }
 
     destroy_dataset(data);
@@ -47,41 +53,59 @@ int count_model_nodes(const Model* model){
                 node_count += count_decision_tree_nodes(model->trees[i]);
             }
             break;
+        case MODEL_MODE_TREE:
+            node_count += count_decision_tree_nodes(model->tree);
+            break;
     }
-    return 0;
+    return node_count;
 }
 
 /**
  * @brief predict_all_from_model predicts the class of all instances in a dataset
- * @param predict_from_model_config the configuration for the predict_from_model function
+ * @param config the configuration
  * @param model the model
  * @param data the dataset
- * @return a list of predicted class ids
+ * @return a list of predictions
  */
-int* predict_all_from_model(PredictFromModelConfig *predict_from_model_config, Model *model, Dataset *data) {
-    int *predictions = (int*) calloc(data->instance_count, sizeof(int));
+Predictions **predict_all_from_model(const Config *config, const Model *model, const Dataset *data) {
+    Predictions **predictions = (Predictions**) calloc(data->instance_count, sizeof(Predictions*));
+
+    Progress progress;
+    if(data->instance_count > 500) {
+        init_progress(&progress, data->instance_count, 0, "Dataset Prediction");
+        update_progress(&progress, 0);
+    }
 
     for(int i=0; i<data->instance_count; ++i) {
-        const PredictFromModelArgs predict_from_model_args = {};
-        predictions[i] = predict_from_model_config->predict_from_model_function(predict_from_model_config, &predict_from_model_args, model, &data->instances[i]);
+        if(data->instance_count > 500 && i%(data->instance_count/500) == 0) {
+            update_progress(&progress, i);
+        }
+        predictions[i] = config->predict_from_model(config, model, &data->instances[i]);
     }
+
+    if(data->instance_count > 500) finalize_progress(&progress);
+
     return predictions;
 }
 
 /**
  * @brief evaluate_model evaluates the accuracy of a model on a dataset
- * @param predict_from_model_config the configuration for the predict_from_model function
+ * @param config the configuration
  * @param model the model
  * @param data the dataset
  * @return the accuracy between 0 and 1
  */
-float evaluate_model(PredictFromModelConfig *predict_from_model_config, Model *model, Dataset *data) {
-    int *predictions = predict_all_from_model(predict_from_model_config, model, data);
+float evaluate_model(const Config *config, const Model *model, const Dataset *data) {
+    Predictions **predictions = predict_all_from_model(config, model, data);
+
     int correct = 0;
     for(int i=0; i<data->instance_count; ++i) {
-        if(predictions[i] == data->instances[i].class_id) correct++;
+        if(predictions[i]->main_prediction == data->instances[i].class_id) correct++;
     }
+
+    for(int i=0; i<data->instance_count; ++i) destroy_predictions(predictions[i]);
     free(predictions);
+
     return (float)correct / (float)data->instance_count;
 }
 
@@ -96,6 +120,10 @@ void destroy_model(Model *model) {
                 destroy_decision_tree(model->trees[i]);
             }
             free(model->trees);
+            free(model);
+            break;
+        case MODEL_MODE_TREE:
+            destroy_decision_tree(model->tree);
             free(model);
             break;
     }
